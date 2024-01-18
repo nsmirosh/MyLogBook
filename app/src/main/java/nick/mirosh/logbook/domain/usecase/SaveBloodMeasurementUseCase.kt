@@ -5,7 +5,6 @@ import java.math.BigDecimal
 
 class SaveBloodMeasurementUseCase(
     private val bloodMeasurementsRepository: BloodMeasurementsRepository
-
 ) {
     suspend operator fun invoke(mmolPerL: BigDecimal) {
         bloodMeasurementsRepository.saveBloodMeasurement(mmolPerL)

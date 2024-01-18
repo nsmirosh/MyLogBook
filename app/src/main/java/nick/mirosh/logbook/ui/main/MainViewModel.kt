@@ -18,7 +18,7 @@ class MainViewModel @Inject constructor(
     fun saveBloodMeasurements(value: String, isMg: Boolean) {
         viewModelScope.launch {
 //            val result = convertMeasurementUseCase(isMg, value.toBigDecimal())
-            saveBloodMeasurementUseCase(result)
+            saveBloodMeasurementUseCase(value.toBigDecimal())
         }
     }
 
