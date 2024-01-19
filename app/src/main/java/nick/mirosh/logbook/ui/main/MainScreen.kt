@@ -101,13 +101,13 @@ fun MainScreen(
             ) {
                 Text(stringResource(R.string.save))
             }
-            Button(
-                onClick = {
-                    viewModel.getEntries()
-                },
-            ) {
-                Text("get entries")
-            }
+//            Button(
+//                onClick = {
+//                    viewModel.getEntries()
+//                },
+//            ) {
+//                Text("get entries")
+//            }
 
             LazyColumn {
                 items(entries.size) { index ->

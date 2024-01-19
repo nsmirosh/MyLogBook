@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import nick.mirosh.logbook.domain.DomainState
 import nick.mirosh.logbook.domain.model.BmEntry
 import nick.mirosh.logbook.domain.model.BmType
 import nick.mirosh.logbook.domain.usecase.GetEntriesUseCase
@@ -64,6 +66,23 @@ class MainViewModel @Inject constructor(
                 value = inputTextValue
             )
             saveBloodMeasurementUseCase(entry)
+             getEntriesUseCase().collect {
+                 when(it) {
+                     is DomainState.Success -> {
+                         _entries.value = it.data
+                     }
+                     is DomainState.Empty ->  {
+
+                     }
+                     is DomainState.Error ->  {
+
+                     }
+                     is DomainState.Loading ->  {
+
+                     }
+                 }
+             }
+
         }
     }
 
@@ -75,12 +94,4 @@ class MainViewModel @Inject constructor(
             value.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
         }
     }
-
-    fun getEntries() {
-        viewModelScope.launch {
-            val entries = getEntriesUseCase()
-            _entries.value = entries
-        }
-    }
-
 }
