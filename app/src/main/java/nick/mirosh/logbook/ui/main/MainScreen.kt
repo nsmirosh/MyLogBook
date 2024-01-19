@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.RadioButton
@@ -16,9 +17,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import nick.mirosh.logbook.R
 import nick.mirosh.logbook.data.model.MeasurementUnit
-import nick.mirosh.logbook.domain.model.BloodMeasurementType
+import nick.mirosh.logbook.domain.model.BmType
 
 
 @Composable
@@ -39,7 +37,7 @@ fun MainScreen(
 ) {
 
     val uiState by viewModel.bloodMeasurementUIState.collectAsState()
-//    var input by remember { mutableStateOf("") }
+    val entries by viewModel.entries.collectAsState()
 
     with(uiState) {
         Column(
@@ -57,21 +55,21 @@ fun MainScreen(
             )
             Text("Add measurement")
             Row {
-                RadioButton(selected = type == BloodMeasurementType.Mg, onClick = {
-                    viewModel.convertTo(BloodMeasurementType.Mg)
+                RadioButton(selected = type == BmType.Mg, onClick = {
+                    viewModel.convertTo(BmType.Mg)
                 })
                 Text(
                     modifier = Modifier.align(Alignment.CenterVertically),
-                    text = BloodMeasurementType.Mg.unit
+                    text = BmType.Mg.unit
                 )
             }
             Row {
-                RadioButton(selected = type == BloodMeasurementType.Mmol, onClick = {
-                    viewModel.convertTo(BloodMeasurementType.Mmol)
+                RadioButton(selected = type == BmType.Mmol, onClick = {
+                    viewModel.convertTo(BmType.Mmol)
                 })
                 Text(
                     modifier = Modifier.align(Alignment.CenterVertically),
-                    text = BloodMeasurementType.Mmol.unit
+                    text = BmType.Mmol.unit
                 )
             }
             Row(
@@ -98,13 +96,23 @@ fun MainScreen(
             }
             Button(
                 onClick = {
-//                mainViewModel.saveBloodMeasurements(
-//                    value = "value",
-//                    isMg = isMol
-//                )
+                    viewModel.saveBloodMeasurements()
                 },
             ) {
                 Text(stringResource(R.string.save))
+            }
+            Button(
+                onClick = {
+                    viewModel.getEntries()
+                },
+            ) {
+                Text("get entries")
+            }
+
+            LazyColumn {
+                items(entries.size) { index ->
+                    Text(entries[index])
+                }
             }
         }
     }
