@@ -10,6 +10,7 @@ import nick.mirosh.logbook.domain.model.BloodMeasurementType
 import nick.mirosh.logbook.domain.usecase.mgToMmol
 import nick.mirosh.logbook.domain.usecase.mmolToMg
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,9 +38,8 @@ class MainViewModel @Inject constructor(
         }
         inputTextValue = result
 
-
         _bloodMeasurementUIState.value = BloodMeasurementUIState(
-            input = if (result == BigDecimal(0)) "" else result.toString(),
+            input = if (result == BigDecimal(0)) "" else formatBigDecimal(result),
             average = "0",
             type = bloodMeasurementType
         )
@@ -52,6 +52,15 @@ class MainViewModel @Inject constructor(
 
     fun saveBloodMeasurements(value: String, isMg: Boolean) {
         viewModelScope.launch {
+        }
+    }
+
+
+    fun formatBigDecimal(value: BigDecimal): String {
+        return if (value.stripTrailingZeros().scale() <= 0) {
+            value.toPlainString()
+        } else {
+            value.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
         }
     }
 
