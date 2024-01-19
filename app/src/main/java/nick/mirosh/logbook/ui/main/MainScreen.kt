@@ -14,6 +14,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,71 +28,78 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import nick.mirosh.logbook.R
+import nick.mirosh.logbook.data.model.MeasurementUnit
+import nick.mirosh.logbook.domain.model.BloodMeasurementType
 
 
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-//    mainViewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel()
 ) {
-    var isMol by remember { mutableStateOf(false) }
-    var text by remember {
-        mutableStateOf("")
-    }
-    Column(
-        modifier = modifier
-            .padding(16.dp)
-            .fillMaxSize()
-    ) {
-        Text("Your average is $ 12.2 mg /dl")
-        Box(
-            modifier = Modifier
-                .padding(top = 16.dp, bottom = 16.dp)
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color.Black)
-        )
-        Text("Add measurement")
-        Row {
-            RadioButton(selected = !isMol, onClick = {
-                isMol = false
-            })
-            Text(modifier = Modifier.align(Alignment.CenterVertically), text = "mg/dl")
-        }
-        Row {
-            RadioButton(selected = isMol, onClick = {
-                isMol = true
-            })
-            Text(modifier = Modifier.align(Alignment.CenterVertically), text = "mmol/L")
-        }
-        Row(
-            modifier = Modifier
-                .padding(top = 16.dp)
-                .fillMaxWidth()
+
+    val uiState by viewModel.bloodMeasurementUIState.collectAsState()
+    var input by remember { mutableStateOf("") }
+
+    with (uiState) {
+        Column(
+            modifier = modifier
+                .padding(16.dp)
+                .fillMaxSize()
         ) {
-            TextField(value = text,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                onValueChange = {
-                    if (it.isEmpty() || it == "." || it.toDoubleOrNull()?.let { number -> number > 0 } == true) {
-                        text = it
-                    }
-                })
-            Text(
+            Text("Your average is $average $type")
+            Box(
                 modifier = Modifier
-                    .padding(start = 16.dp)
-                    .align(Alignment.CenterVertically), text = "mg/dl"
+                    .padding(top = 16.dp, bottom = 16.dp)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Color.Black)
             )
-        }
-        Button(
-            onClick = {
+            Text("Add measurement")
+            Row {
+                RadioButton(selected = type == BloodMeasurementType.Mmol, onClick = {
+                    viewModel.onBloodMeasurementChanged(input, BloodMeasurementType.Mmol)
+                })
+                Text(modifier = Modifier.align(Alignment.CenterVertically), text = BloodMeasurementType.Mmol.unit)
+            }
+            Row {
+                RadioButton(selected = type == BloodMeasurementType.Mg, onClick = {
+                    viewModel.onBloodMeasurementChanged(input, BloodMeasurementType.Mg)
+                })
+                Text(modifier = Modifier.align(Alignment.CenterVertically), text = BloodMeasurementType.Mg.unit)
+            }
+            Row(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+            ) {
+                TextField(value = input,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+
+                    onValueChange = {
+                        if (it.isEmpty() || it == "." || it.toDoubleOrNull()
+                                ?.let { number -> number > 0 } == true
+                        ) {
+                            input = it
+                        }
+                    })
+                Text(
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .align(Alignment.CenterVertically), text = "mg/dl"
+                )
+            }
+            Button(
+                onClick = {
 //                mainViewModel.saveBloodMeasurements(
 //                    value = "value",
 //                    isMg = isMol
 //                )
-            },
-        ) {
-            Text(stringResource(R.string.save))
+                },
+            ) {
+                Text(stringResource(R.string.save))
+            }
         }
     }
 }

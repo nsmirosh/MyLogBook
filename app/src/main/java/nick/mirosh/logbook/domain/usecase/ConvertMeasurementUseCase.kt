@@ -1,15 +1,16 @@
 package nick.mirosh.logbook.domain.usecase
 
+import nick.mirosh.logbook.domain.model.BloodMeasurementType
 import java.math.BigDecimal
 import java.math.MathContext
 
 class ConvertMeasurementUseCase {
 
-    operator fun invoke(convertToMol: Boolean, value: BigDecimal) =
-        if (convertToMol)
-            mgToMmol(value)
-        else
+    operator fun invoke(bloodMeasurementType: BloodMeasurementType, value: BigDecimal) =
+        if (bloodMeasurementType == BloodMeasurementType.Mmol)
             mmolToMg(value)
+        else
+            mgToMmol(value)
 
 }
 

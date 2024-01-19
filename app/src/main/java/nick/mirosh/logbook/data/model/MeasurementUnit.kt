@@ -1,4 +1,4 @@
-package nick.mirosh.logbook.domain.model
+package nick.mirosh.logbook.data.model
 
 import java.math.BigInteger
 
