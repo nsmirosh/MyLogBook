@@ -5,5 +5,5 @@ import nick.mirosh.logbook.domain.model.BloodMeasurementType
 data class BloodMeasurementUIState(
     val input: String = "",
     val average: String = "0",
-    val type: BloodMeasurementType = BloodMeasurementType.Mmol
+    val type: BloodMeasurementType = BloodMeasurementType.Mg
 )

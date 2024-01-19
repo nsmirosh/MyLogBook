@@ -3,8 +3,9 @@ package nick.mirosh.logbook.domain.usecase
 import nick.mirosh.logbook.domain.model.BloodMeasurementType
 import java.math.BigDecimal
 import java.math.MathContext
+import javax.inject.Inject
 
-class ConvertMeasurementUseCase {
+class ConvertMeasurementUseCase @Inject constructor() {
 
     operator fun invoke(bloodMeasurementType: BloodMeasurementType, value: BigDecimal) =
         if (bloodMeasurementType == BloodMeasurementType.Mmol)

@@ -39,9 +39,9 @@ fun MainScreen(
 ) {
 
     val uiState by viewModel.bloodMeasurementUIState.collectAsState()
-    var input by remember { mutableStateOf("") }
+//    var input by remember { mutableStateOf("") }
 
-    with (uiState) {
+    with(uiState) {
         Column(
             modifier = modifier
                 .padding(16.dp)
@@ -57,16 +57,22 @@ fun MainScreen(
             )
             Text("Add measurement")
             Row {
-                RadioButton(selected = type == BloodMeasurementType.Mmol, onClick = {
-                    viewModel.onBloodMeasurementChanged(input, BloodMeasurementType.Mmol)
+                RadioButton(selected = type == BloodMeasurementType.Mg, onClick = {
+                    viewModel.convertTo(BloodMeasurementType.Mg)
                 })
-                Text(modifier = Modifier.align(Alignment.CenterVertically), text = BloodMeasurementType.Mmol.unit)
+                Text(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = BloodMeasurementType.Mg.unit
+                )
             }
             Row {
-                RadioButton(selected = type == BloodMeasurementType.Mg, onClick = {
-                    viewModel.onBloodMeasurementChanged(input, BloodMeasurementType.Mg)
+                RadioButton(selected = type == BloodMeasurementType.Mmol, onClick = {
+                    viewModel.convertTo(BloodMeasurementType.Mmol)
                 })
-                Text(modifier = Modifier.align(Alignment.CenterVertically), text = BloodMeasurementType.Mg.unit)
+                Text(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = BloodMeasurementType.Mmol.unit
+                )
             }
             Row(
                 modifier = Modifier
@@ -81,13 +87,13 @@ fun MainScreen(
                         if (it.isEmpty() || it == "." || it.toDoubleOrNull()
                                 ?.let { number -> number > 0 } == true
                         ) {
-                            input = it
+                            viewModel.onTextChanged(it)
                         }
                     })
                 Text(
                     modifier = Modifier
                         .padding(start = 16.dp)
-                        .align(Alignment.CenterVertically), text = "mg/dl"
+                        .align(Alignment.CenterVertically), text = type.unit
                 )
             }
             Button(

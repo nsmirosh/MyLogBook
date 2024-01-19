@@ -7,13 +7,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import nick.mirosh.logbook.domain.model.BloodMeasurementType
-import nick.mirosh.logbook.domain.usecase.ConvertMeasurementUseCase
+import nick.mirosh.logbook.domain.usecase.mgToMmol
+import nick.mirosh.logbook.domain.usecase.mmolToMg
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
 //    private val saveBloodMeasurementUseCase: SaveBloodMeasurementUseCase,
-    private val convertMeasurementUseCase: ConvertMeasurementUseCase
+//    private val convertMeasurementUseCase: ConvertMeasurementUseCase
 
 ) : ViewModel() {
 
@@ -21,13 +23,31 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(BloodMeasurementUIState())
     val bloodMeasurementUIState: StateFlow<BloodMeasurementUIState> = _bloodMeasurementUIState
 
-    fun onBloodMeasurementChanged(inputText: String, bloodMeasurementType: BloodMeasurementType) {
+    private var inputTextValue = BigDecimal(0)
+    private var measurementType = BloodMeasurementType.Mg
 
-//        if (bloodMeasurementType == BloodMeasurementType.Mmol)
-//            mmolToMg(value)
-//        else
-//            mgToMmol(value)
+    fun convertTo(bloodMeasurementType: BloodMeasurementType) {
+        val result = if (inputTextValue != BigDecimal(0)) {
+            if (bloodMeasurementType == BloodMeasurementType.Mmol)
+                mgToMmol(inputTextValue)
+            else
+                mmolToMg(inputTextValue)
+        } else {
+            BigDecimal(0)
+        }
+        inputTextValue = result
 
+
+        _bloodMeasurementUIState.value = BloodMeasurementUIState(
+            input = if (result == BigDecimal(0)) "" else result.toString(),
+            average = "0",
+            type = bloodMeasurementType
+        )
+    }
+
+    fun onTextChanged(inputText: String) {
+        inputTextValue = inputText.toBigDecimal()
+        _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(input = inputText)
     }
 
     fun saveBloodMeasurements(value: String, isMg: Boolean) {
