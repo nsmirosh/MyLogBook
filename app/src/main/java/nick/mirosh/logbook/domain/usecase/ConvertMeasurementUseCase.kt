@@ -7,12 +7,12 @@ import javax.inject.Inject
 
 class ConvertMeasurementUseCase @Inject constructor() {
 
-    operator fun invoke(bloodMeasurementType: BmType, input: BigDecimal) =
-        if (input != BigDecimal(0)) {
+    operator fun invoke(bloodMeasurementType: BmType, toConvert: BigDecimal) =
+        if (toConvert != BigDecimal(0)) {
             if (bloodMeasurementType == BmType.Mmol)
-                mgToMmol(input)
+                mgToMmol(toConvert)
             else
-                mmolToMg(input)
+                mmolToMg(toConvert)
         } else {
             BigDecimal(0)
         }

@@ -42,9 +42,10 @@ class MainViewModel @Inject constructor(
 
     fun convertTo(bloodMeasurementType: BmType) {
         input = convertMeasurementUseCase(bloodMeasurementType, input)
+        val average = entries.averageValue(bloodMeasurementType)
         _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
             input = if (input == BigDecimal(0)) "" else formatBigDecimal(input),
-            average = formatBigDecimal(entries.averageValue()),
+            average = formatBigDecimal(average),
             type = bloodMeasurementType
         )
     }
@@ -82,10 +83,13 @@ class MainViewModel @Inject constructor(
                             //TODO don't know if introducing another global var is a good idea
                             entries.clear()
                             entries.addAll(domainState.data)
+                            val type = _bloodMeasurementUIState.value.type
+                            val average = entries.averageValue(type)
 
+                            input = BigDecimal(0)
                             _bloodMeasurementUIState.value =
                                 _bloodMeasurementUIState.value.copy(
-                                    average = formatBigDecimal(domainState.data.averageValue()),
+                                    average = formatBigDecimal(average),
                                     input = "",
                                 )
                         }
@@ -98,13 +102,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun formatBigDecimal(value: BigDecimal): String {
-        return if (value.stripTrailingZeros().scale() <= 0) {
+    private fun formatBigDecimal(value: BigDecimal) =
+        if (value.stripTrailingZeros().scale() <= 0)
             value.toPlainString()
-        } else {
+        else
             value.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-        }
-    }
+
 
     private fun List<BmEntry>.averageValue(): BigDecimal {
         if (this.isEmpty()) return BigDecimal.ZERO
@@ -116,4 +119,36 @@ class MainViewModel @Inject constructor(
             RoundingMode.HALF_UP
         )
     }
+
+    private fun List<BmEntry>.averageValue(averageOnType: BmType): BigDecimal {
+        if (this.isEmpty()) return BigDecimal.ZERO
+
+        val mMolEntries = this.filter { it.type == BmType.Mmol }
+        val mMgEntries = this.filter { it.type == BmType.Mg }
+
+
+        var sum = BigDecimal.ZERO
+
+        if (averageOnType == BmType.Mmol) {
+            sum = mMolEntries.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
+            val convertedMgToMol = mMgEntries.map { mgToMmol(it.value) }
+            convertedMgToMol.forEach {
+                sum = sum.add(it)
+            }
+        } else {
+            sum = mMgEntries.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
+            val convertedMolToMg = mMolEntries .map { mmolToMg(it.value) }
+            convertedMolToMg.forEach {
+                sum = sum.add(it)
+            }
+        }
+
+//        val totalSum = this.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
+        return sum.divide(
+            BigDecimal(this.size),
+            5,
+            RoundingMode.HALF_UP
+        )
+    }
+
 }
