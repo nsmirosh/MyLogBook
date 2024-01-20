@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import nick.mirosh.logbook.domain.DomainState
 import nick.mirosh.logbook.domain.model.BmEntry
@@ -34,26 +32,27 @@ class MainViewModel @Inject constructor(
         MutableStateFlow<BloodEntriesUIState>(BloodEntriesUIState.Empty)
     val entriesUIState: StateFlow<BloodEntriesUIState> = _entriesUIState
 
-    private var inputTextValue = BigDecimal(0)
+    private var input = BigDecimal(0)
+    private var entries = mutableListOf<BmEntry>()
 
     init {
         getEntries()
     }
 
     fun convertTo(bloodMeasurementType: BmType) {
-        val result = if (inputTextValue != BigDecimal(0)) {
+        val result = if (input != BigDecimal(0)) {
             if (bloodMeasurementType == BmType.Mmol)
-                mgToMmol(inputTextValue)
+                mgToMmol(input)
             else
-                mmolToMg(inputTextValue)
+                mmolToMg(input)
         } else {
             BigDecimal(0)
         }
-        inputTextValue = result
+        input = result
 
-        _bloodMeasurementUIState.value = BloodMeasurementUIState(
+        _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
             input = if (result == BigDecimal(0)) "" else formatBigDecimal(result),
-            average = "0",
+            average = formatBigDecimal(entries.averageValue()),
             type = bloodMeasurementType
         )
     }
@@ -64,7 +63,7 @@ class MainViewModel @Inject constructor(
             _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(input = "")
             return
         }
-        inputTextValue = inputText.toBigDecimal()
+        input = inputText.toBigDecimal()
         _bloodMeasurementUIState.value =
             _bloodMeasurementUIState.value.copy(input = inputText)
     }
@@ -73,7 +72,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             val entry = BmEntry(
                 type = _bloodMeasurementUIState.value.type,
-                value = inputTextValue
+                value = input
             )
             saveBloodMeasurementUseCase(entry)
             getEntries()
@@ -87,6 +86,11 @@ class MainViewModel @Inject constructor(
                     when (domainState) {
                         is DomainState.Success -> {
                             _entriesUIState.value = BloodEntriesUIState.Success(domainState.data)
+
+                            //TODO don't know if introducing another global var is a good idea
+                            entries.clear()
+                            entries.addAll(domainState.data)
+
                             _bloodMeasurementUIState.value =
                                 _bloodMeasurementUIState.value.copy(
                                     average = formatBigDecimal(domainState.data.averageValue()),
@@ -110,7 +114,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun List<BmEntry>.averageValue(): BigDecimal {
+    private fun List<BmEntry>.averageValue(): BigDecimal {
         if (this.isEmpty()) return BigDecimal.ZERO
 
         val totalSum = this.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
