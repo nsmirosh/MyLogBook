@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import nick.mirosh.logbook.domain.DomainState
 import nick.mirosh.logbook.domain.model.BmEntry
 import nick.mirosh.logbook.domain.model.BmType
+import nick.mirosh.logbook.domain.usecase.ConvertMeasurementUseCase
 import nick.mirosh.logbook.domain.usecase.GetEntriesUseCase
 import nick.mirosh.logbook.domain.usecase.SaveBloodMeasurementUseCase
 import nick.mirosh.logbook.domain.usecase.mgToMmol
@@ -20,8 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val saveBloodMeasurementUseCase: SaveBloodMeasurementUseCase,
-    private val getEntriesUseCase: GetEntriesUseCase
-//    private val convertMeasurementUseCase: ConvertMeasurementUseCase
+    private val getEntriesUseCase: GetEntriesUseCase,
+    private val convertMeasurementUseCase: ConvertMeasurementUseCase
 
 ) : ViewModel() {
 
@@ -40,18 +41,9 @@ class MainViewModel @Inject constructor(
     }
 
     fun convertTo(bloodMeasurementType: BmType) {
-        val result = if (input != BigDecimal(0)) {
-            if (bloodMeasurementType == BmType.Mmol)
-                mgToMmol(input)
-            else
-                mmolToMg(input)
-        } else {
-            BigDecimal(0)
-        }
-        input = result
-
+        input = convertMeasurementUseCase(bloodMeasurementType, input)
         _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
-            input = if (result == BigDecimal(0)) "" else formatBigDecimal(result),
+            input = if (input == BigDecimal(0)) "" else formatBigDecimal(input),
             average = formatBigDecimal(entries.averageValue()),
             type = bloodMeasurementType
         )
