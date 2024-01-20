@@ -33,7 +33,9 @@ class GetAverageEntryValueUseCaseTest {
                 type = BmType.Mmol
             )
         )
-        val usecase = GetAverageEntryValueUseCase()
+        //TODO set up mock
+        val convertMeasurementUseCase = ConvertMeasurementUseCase()
+        val usecase = GetAverageEntryValueUseCase(convertMeasurementUseCase)
         val expected = BigDecimal(4)
         val averageOnType = BmType.Mmol
 
@@ -63,7 +65,8 @@ class GetAverageEntryValueUseCaseTest {
                 type = BmType.Mg
             )
         )
-        val usecase = GetAverageEntryValueUseCase()
+        val convertMeasurementUseCase = ConvertMeasurementUseCase()
+        val usecase = GetAverageEntryValueUseCase(convertMeasurementUseCase)
         val expected = BigDecimal(81.3296666667)
         val averageOnType = BmType.Mg
 
@@ -80,7 +83,8 @@ class GetAverageEntryValueUseCaseTest {
     fun execute_withEmptyEntriesList_returnsZero() {
         //Arrange
         val entries = listOf<BmEntry>()
-        val usecase = GetAverageEntryValueUseCase()
+        val convertMeasurementUseCase = ConvertMeasurementUseCase()
+        val usecase = GetAverageEntryValueUseCase(convertMeasurementUseCase)
         val expected = BigDecimal(0)
         val averageOnType = BmType.Mmol
 
