@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import nick.mirosh.logbook.domain.DomainState
 import nick.mirosh.logbook.domain.model.BmEntry
@@ -29,11 +30,15 @@ class MainViewModel @Inject constructor(
     private val _bloodMeasurementUIState =
         MutableStateFlow(BloodMeasurementUIState())
     val bloodMeasurementUIState: StateFlow<BloodMeasurementUIState> = _bloodMeasurementUIState
-    private val _entries =
-        MutableStateFlow(listOf<String>())
-    val entries: StateFlow<List<String>> = _entries
+    private val _entriesUIState =
+        MutableStateFlow<BloodEntriesUIState>(BloodEntriesUIState.Empty)
+    val entriesUIState: StateFlow<BloodEntriesUIState> = _entriesUIState
 
     private var inputTextValue = BigDecimal(0)
+
+    init {
+        getEntries()
+    }
 
     fun convertTo(bloodMeasurementType: BmType) {
         val result = if (inputTextValue != BigDecimal(0)) {
@@ -55,8 +60,13 @@ class MainViewModel @Inject constructor(
 
     fun onTextChanged(inputText: String) {
         //TODO make sure the whole layout is not recomposing when I'm entering the text
+        if (inputText.isEmpty()) {
+            _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(input = "")
+            return
+        }
         inputTextValue = inputText.toBigDecimal()
-        _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(input = inputText)
+        _bloodMeasurementUIState.value =
+            _bloodMeasurementUIState.value.copy(input = inputText)
     }
 
     fun saveBloodMeasurements() {
@@ -66,26 +76,31 @@ class MainViewModel @Inject constructor(
                 value = inputTextValue
             )
             saveBloodMeasurementUseCase(entry)
-             getEntriesUseCase().collect {
-                 when(it) {
-                     is DomainState.Success -> {
-                         _entries.value = it.data
-                     }
-                     is DomainState.Empty ->  {
-
-                     }
-                     is DomainState.Error ->  {
-
-                     }
-                     is DomainState.Loading ->  {
-
-                     }
-                 }
-             }
-
+            getEntries()
         }
     }
 
+    private fun getEntries() {
+        viewModelScope.launch {
+            getEntriesUseCase()
+                .collect { domainState ->
+                    when (domainState) {
+                        is DomainState.Success -> {
+                            _entriesUIState.value = BloodEntriesUIState.Success(domainState.data)
+                            _bloodMeasurementUIState.value =
+                                _bloodMeasurementUIState.value.copy(
+                                    average = formatBigDecimal(domainState.data.averageValue()),
+                                    input = "",
+                                )
+                        }
+
+                        is DomainState.Empty -> BloodEntriesUIState.Empty
+
+                        else -> {}
+                    }
+                }
+        }
+    }
 
     fun formatBigDecimal(value: BigDecimal): String {
         return if (value.stripTrailingZeros().scale() <= 0) {
@@ -93,5 +108,16 @@ class MainViewModel @Inject constructor(
         } else {
             value.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
         }
+    }
+
+    fun List<BmEntry>.averageValue(): BigDecimal {
+        if (this.isEmpty()) return BigDecimal.ZERO
+
+        val totalSum = this.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
+        return totalSum.divide(
+            BigDecimal(this.size),
+            5,
+            RoundingMode.HALF_UP
+        )
     }
 }

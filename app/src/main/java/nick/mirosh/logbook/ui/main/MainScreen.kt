@@ -26,7 +26,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import nick.mirosh.logbook.R
-import nick.mirosh.logbook.data.model.MeasurementUnit
 import nick.mirosh.logbook.domain.model.BmType
 
 
@@ -37,7 +36,7 @@ fun MainScreen(
 ) {
 
     val uiState by viewModel.bloodMeasurementUIState.collectAsState()
-    val entries by viewModel.entries.collectAsState()
+    val entriesUIStates by viewModel.entriesUIState.collectAsState()
 
     with(uiState) {
         Column(
@@ -101,18 +100,19 @@ fun MainScreen(
             ) {
                 Text(stringResource(R.string.save))
             }
-//            Button(
-//                onClick = {
-//                    viewModel.getEntries()
-//                },
-//            ) {
-//                Text("get entries")
-//            }
-
-            LazyColumn {
-                items(entries.size) { index ->
-                    Text(entries[index])
+            when (entriesUIStates) {
+                is BloodEntriesUIState.Empty -> {
+                    Text("No entries yet")
                 }
+                is BloodEntriesUIState.Success -> {
+                    val entries = (entriesUIStates as BloodEntriesUIState.Success).entries
+                    LazyColumn {
+                        items(entries.size) { index ->
+                            Text(entries[index].toString())
+                        }
+                    }
+                }
+                else -> {}
             }
         }
     }

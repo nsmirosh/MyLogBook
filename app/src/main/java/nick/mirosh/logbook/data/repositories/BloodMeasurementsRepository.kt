@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 interface BloodMeasurementsRepository {
     suspend fun saveEntry(bmEntry: BmEntry)
-    suspend fun getEntries(): Flow<DomainState<List<String>>>
+    suspend fun getEntries(): Flow<DomainState<List< BmEntry>>>
 }
 
 class BloodMeasureRepositoryImpl @Inject constructor(
@@ -27,10 +27,10 @@ class BloodMeasureRepositoryImpl @Inject constructor(
         bloodMeasurementDao.insert(bmEntry.toBmDatabaseEntry())
     }
 
-    override suspend fun getEntries(): Flow<DomainState<List<String>>> =
+    override suspend fun getEntries(): Flow<DomainState<List<BmEntry>>> =
         flow {
             emit(DomainState.Loading)
-            val entries = bloodMeasurementDao.getAllEntries().map { it.toString() }
+            val entries = bloodMeasurementDao.getAllEntries().map { it.toBmEntry()}
             val dataState =
                 if (entries.isEmpty()) DomainState.Empty else DomainState.Success(entries)
             emit(dataState)
