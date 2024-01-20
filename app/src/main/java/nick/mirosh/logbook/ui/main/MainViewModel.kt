@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import nick.mirosh.logbook.domain.DomainState
 import nick.mirosh.logbook.domain.model.BmEntry
 import nick.mirosh.logbook.domain.model.BmType
+import nick.mirosh.logbook.domain.usecase.GetAverageEntryValueUseCase
 import nick.mirosh.logbook.domain.usecase.ConvertMeasurementUseCase
 import nick.mirosh.logbook.domain.usecase.GetEntriesUseCase
 import nick.mirosh.logbook.domain.usecase.SaveBloodMeasurementUseCase
@@ -22,7 +23,8 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val saveBloodMeasurementUseCase: SaveBloodMeasurementUseCase,
     private val getEntriesUseCase: GetEntriesUseCase,
-    private val convertMeasurementUseCase: ConvertMeasurementUseCase
+    private val convertMeasurementUseCase: ConvertMeasurementUseCase,
+    private val getAverageEntryValueUseCase: GetAverageEntryValueUseCase
 
 ) : ViewModel() {
 
@@ -42,7 +44,8 @@ class MainViewModel @Inject constructor(
 
     fun convertTo(bloodMeasurementType: BmType) {
         input = convertMeasurementUseCase(bloodMeasurementType, input)
-        val average = entries.averageValue(bloodMeasurementType)
+//        val average = entries.averageValue(bloodMeasurementType)
+        val average = getAverageEntryValueUseCase(entries, bloodMeasurementType)
         _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
             input = if (input == BigDecimal(0)) "" else formatBigDecimal(input),
             average = formatBigDecimal(average),
@@ -84,7 +87,8 @@ class MainViewModel @Inject constructor(
                             entries.clear()
                             entries.addAll(domainState.data)
                             val type = _bloodMeasurementUIState.value.type
-                            val average = entries.averageValue(type)
+                            val average = getAverageEntryValueUseCase(entries, type)
+//                            val average = entries.averageValue(type)
 
                             input = BigDecimal(0)
                             _bloodMeasurementUIState.value =
@@ -109,17 +113,6 @@ class MainViewModel @Inject constructor(
             value.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
 
 
-    private fun List<BmEntry>.averageValue(): BigDecimal {
-        if (this.isEmpty()) return BigDecimal.ZERO
-
-        val totalSum = this.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
-        return totalSum.divide(
-            BigDecimal(this.size),
-            5,
-            RoundingMode.HALF_UP
-        )
-    }
-
     private fun List<BmEntry>.averageValue(averageOnType: BmType): BigDecimal {
         if (this.isEmpty()) return BigDecimal.ZERO
 
@@ -143,7 +136,6 @@ class MainViewModel @Inject constructor(
             }
         }
 
-//        val totalSum = this.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
         return sum.divide(
             BigDecimal(this.size),
             5,
