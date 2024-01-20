@@ -5,11 +5,11 @@ import java.math.BigDecimal
 import java.math.MathContext
 import javax.inject.Inject
 
+const val MMOL_CONVERSION_FACTOR = 18.0182
 class ConvertMeasurementUseCase @Inject constructor() {
-
-    operator fun invoke(bloodMeasurementType: BmType, toConvert: BigDecimal) =
+    operator fun invoke(typeToConvertTo: BmType, toConvert: BigDecimal) =
         if (toConvert != BigDecimal(0)) {
-            if (bloodMeasurementType == BmType.Mmol)
+            if (typeToConvertTo == BmType.Mmol)
                 mgToMmol(toConvert)
             else
                 mmolToMg(toConvert)
