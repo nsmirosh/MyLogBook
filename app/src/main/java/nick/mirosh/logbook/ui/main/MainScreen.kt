@@ -45,7 +45,7 @@ fun MainScreen(
 
     var inputText by remember { mutableStateOf(inputTextUiState) }
 
-    LaunchedEffect(inputTextUiState ) {
+    LaunchedEffect(inputTextUiState) {
         inputText = inputTextUiState
     }
 
@@ -113,16 +113,47 @@ fun MainScreenContent(
                 text = BmType.Mmol.unit
             )
         }
+        Input(
+            inputTextUiState = inputTextUiState,
+            bloodMeasurementUiState = bloodMeasurementUiState,
+            onTextChanged = onTextChanged,
+            isValidInput = isValidInput,
+            onSave = onSave
+        )
+        EntriesList(entriesUiState)
+    }
+}
+
+@Composable
+fun Input(
+    inputTextUiState: String,
+    bloodMeasurementUiState: BloodMeasurementUIState,
+    isValidInput: (String) -> Boolean,
+    onTextChanged: (String) -> Unit,
+    onSave: () -> Unit,
+) {
+    Column {
+        var text by remember { mutableStateOf(inputTextUiState) }
         Row(
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth()
         ) {
-            InputText(
-                inputTextUiState,
-                onTextChanged = onTextChanged,
-                isValidInput = isValidInput
-            )
+
+            LaunchedEffect(inputTextUiState) {
+                text = inputTextUiState
+            }
+            TextField(value = text,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+
+                onValueChange = {
+                    if (isValidInput(it)) {
+                        onTextChanged(it)
+                        text = it
+                    }
+                })
+
             Text(
                 modifier = Modifier
                     .padding(start = 16.dp)
@@ -130,38 +161,16 @@ fun MainScreenContent(
             )
         }
         Button(
-            enabled = isValidInput(inputTextUiState),
+            enabled = text.isNotEmpty(),
             onClick = {
                 onSave()
             },
         ) {
             Text(stringResource(R.string.save))
         }
-        EntriesList(entriesUiState)
     }
-}
 
-@Composable
-fun InputText(
-    inputText: String,
-    onTextChanged: (String) -> Unit,
-    isValidInput: (String) -> Boolean
-) {
-    var text by remember { mutableStateOf(inputText) }
 
-    LaunchedEffect(inputText) {
-        text = inputText
-    }
-    TextField(value = text,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        singleLine = true,
-
-        onValueChange = {
-            if (isValidInput(it)) {
-                onTextChanged(it)
-                text = it
-            }
-        })
 }
 
 @Composable
