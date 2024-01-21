@@ -35,18 +35,18 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.bloodMeasurementUIState.collectAsState()
-    val entriesUIState by viewModel.entriesUIState.collectAsState()
-    val inputTextState by viewModel.inputTextUIState.collectAsState()
+    val bloodMeasurementUiState by viewModel.bloodMeasurementUIState.collectAsState()
+    val entriesUiState by viewModel.entriesUIState.collectAsState()
+    val inputTextUiState by viewModel.inputTextUIState.collectAsState()
     MainScreenContent(
         modifier = modifier,
-        uiState = uiState,
-        inputTextState = inputTextState,
+        bloodMeasurementUiState = bloodMeasurementUiState,
+        inputTextState = inputTextUiState,
         onConvertType = { viewModel.convertTo(it) },
         isValidInput = { viewModel.isValidInput(it) },
         onTextChanged = { viewModel.onTextChanged(it) },
         onSave = { viewModel.saveBloodMeasurements() },
-        entriesUIState = entriesUIState
+        entriesUIState = entriesUiState
     )
 
 }
@@ -55,7 +55,7 @@ fun MainScreen(
 @Composable
 fun MainScreenContent(
     modifier: Modifier,
-    uiState: BloodMeasurementUIState,
+    bloodMeasurementUiState: BloodMeasurementUIState,
     entriesUIState: BloodEntriesUIState,
     inputTextState: String,
     onConvertType: (BmType) -> Unit,
@@ -69,7 +69,7 @@ fun MainScreenContent(
             .padding(16.dp)
             .fillMaxSize()
     ) {
-        Text("Your average is ${uiState.average} ${uiState.type}")
+        Text("Your average is ${bloodMeasurementUiState.average} ${bloodMeasurementUiState.type}")
         Box(
             modifier = Modifier
                 .padding(top = 16.dp, bottom = 16.dp)
@@ -79,7 +79,7 @@ fun MainScreenContent(
         )
         Text(stringResource(R.string.add_measurement))
         Row {
-            RadioButton(selected = uiState.type == BmType.Mg, onClick = {
+            RadioButton(selected = bloodMeasurementUiState.type == BmType.Mg, onClick = {
                 onConvertType(BmType.Mg)
             })
             Text(
@@ -88,7 +88,7 @@ fun MainScreenContent(
             )
         }
         Row {
-            RadioButton(selected = uiState.type == BmType.Mmol, onClick = {
+            RadioButton(selected = bloodMeasurementUiState.type == BmType.Mmol, onClick = {
                 onConvertType(BmType.Mmol)
             })
             Text(
@@ -109,7 +109,7 @@ fun MainScreenContent(
             Text(
                 modifier = Modifier
                     .padding(start = 16.dp)
-                    .align(Alignment.CenterVertically), text = uiState.type.unit
+                    .align(Alignment.CenterVertically), text = bloodMeasurementUiState.type.unit
             )
         }
         Button(
@@ -167,7 +167,7 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
 fun MainScreenPreview() {
     MainScreenContent(
         modifier = Modifier.background(color = Color.White),
-        uiState = BloodMeasurementUIState(
+        bloodMeasurementUiState = BloodMeasurementUIState(
             type = BmType.Mg,
             average = "0"
         ),
