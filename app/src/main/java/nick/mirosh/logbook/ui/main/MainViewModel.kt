@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import nick.mirosh.logbook.R
 import nick.mirosh.logbook.domain.DomainState
 import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
@@ -32,6 +34,7 @@ class MainViewModel @Inject constructor(
     private val _entriesUIState =
         MutableStateFlow<BloodEntriesUIState>(BloodEntriesUIState.Empty)
     val entriesUIState: StateFlow<BloodEntriesUIState> = _entriesUIState
+
     //Exposing a separate flow to avoid unneccessary recomposition on the UI
     private val _inputTextUIState =
         MutableStateFlow("")
@@ -57,67 +60,98 @@ class MainViewModel @Inject constructor(
 
     fun onTextChanged(inputText: String) {
         if (inputText.isEmpty()) {
-            _inputTextUIState.value = ""
-            inputBigDecimal = BigDecimal(0)
+            resetInputState()
             return
         }
-        inputBigDecimal = inputText.toBigDecimal()
-        _inputTextUIState.value = inputText
+
+        if (isValidNumber(inputText)) {
+            inputBigDecimal = BigDecimal(inputText)
+            _inputTextUIState.value = inputText
+        } else {
+            showInvalidInputError()
+        }
+    }
+
+    private fun resetInputState() {
+        _inputTextUIState.value = ""
+        inputBigDecimal = BigDecimal(0)
+    }
+
+    private fun isValidNumber(text: String): Boolean {
+        val numberRegex = "^-?\\d*(\\.\\d+)?$".toRegex()
+        return text.matches(numberRegex)
+    }
+
+    private fun showInvalidInputError() {
+        _inputTextUIState.value = ""
+        _entriesUIState.value = BloodEntriesUIState.Error(R.string.please_enter_valid_input)
     }
 
     fun saveBloodMeasurements() {
-        viewModelScope.launch {
-            val entry = BloodGlucoseEntry(
-                type = _bloodMeasurementUIState.value.type,
-                value = inputBigDecimal
-            )
-            saveBloodMeasurementUseCase(entry).collect {
-                when (it) {
-                    is DomainState.Success -> {
-                        getEntries()
-                    }
+            viewModelScope.launch {
+                val entry = BloodGlucoseEntry(
+                    type = _bloodMeasurementUIState.value.type,
+                    value = inputBigDecimal
+                )
+                saveBloodMeasurementUseCase(entry).collect {
+                    when (it) {
+                        is DomainState.Success -> {
+                            getEntries()
+                        }
 
-                    is DomainState.Error -> {
+                        is DomainState.Error -> {
 
-                    }
+                        }
 
-                    is DomainState.Loading -> {
-                        _entriesUIState.value = BloodEntriesUIState.Loading
-                    }
+                        is DomainState.Loading -> {
+                            _entriesUIState.value = BloodEntriesUIState.Loading
+                        }
 
-                    else -> {
+                        else -> {
 
+                        }
                     }
                 }
             }
-        }
     }
 
     private fun getEntries() {
         viewModelScope.launch {
             getEntriesUseCase()
+                .distinctUntilChanged() // you ensure that EntriesList recomposes only when there is a new state different from the current one.
                 .collect { domainState ->
                     when (domainState) {
                         is DomainState.Success -> {
-                            _entriesUIState.value = BloodEntriesUIState.Success(domainState.data)
-                            entries.clear()
-                            entries.addAll(domainState.data)
-                            val type = bloodMeasurementUIState.value.type
-                            val average = getAverageEntryValueUseCase(entries, type)
-                            inputBigDecimal = BigDecimal(0)
-                            _inputTextUIState.value = ""
-                            _bloodMeasurementUIState.value =
-                                bloodMeasurementUIState.value.copy(
-                                    average = formatBigDecimal(average),
-                                )
+                            handleSuccess(domainState.data)
                         }
 
                         is DomainState.Empty -> BloodEntriesUIState.Empty
 
-                        else -> {}
+                        else -> {
+                            // no op
+                        }
                     }
                 }
         }
+    }
+
+    private fun handleSuccess(data: List<BloodGlucoseEntry>) {
+
+        val type = bloodMeasurementUIState.value.type
+        val average = calculateAverage(data, type)
+        updateUIState(data, average)
+    }
+
+    private fun calculateAverage(data: List<BloodGlucoseEntry>, type: BmType): BigDecimal {
+        return getAverageEntryValueUseCase(data, type)
+    }
+
+    private fun updateUIState(data: List<BloodGlucoseEntry>, average: BigDecimal) {
+        _entriesUIState.value = BloodEntriesUIState.Success(data)
+        _inputTextUIState.value = ""
+        _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
+            average = formatBigDecimal(average)
+        )
     }
 
     private fun formatBigDecimal(value: BigDecimal) =
@@ -129,4 +163,17 @@ class MainViewModel @Inject constructor(
     fun isValidInput(inputText: String) =
         inputText.isEmpty() || inputText != "." || inputText.toDoubleOrNull()
             ?.let { number -> number > 0 } == true
+
+    fun onEvent(event: UIEvent) {
+        when (event) {
+            is UIEvent.SaveBloodMeasurements -> {
+                saveBloodMeasurements()
+            }
+        }
+    }
+
+    sealed class UIEvent() {
+        data object SaveBloodMeasurements : UIEvent()
+    }
+
 }

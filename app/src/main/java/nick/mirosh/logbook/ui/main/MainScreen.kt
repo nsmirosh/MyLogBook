@@ -1,5 +1,6 @@
 package nick.mirosh.logbook.ui.main
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,7 +47,7 @@ fun MainScreen(
         onConvertType = { viewModel.convertTo(it) },
         isValidInput = { viewModel.isValidInput(it) },
         onTextChanged = { viewModel.onTextChanged(it) },
-        onSave = { viewModel.saveBloodMeasurements() },
+        onSave = { viewModel.onEvent(MainViewModel.UIEvent.SaveBloodMeasurements) },
         entriesUIState = entriesUIState
     )
 
@@ -146,6 +148,13 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
     when (entriesUIState) {
         is BloodEntriesUIState.Empty -> {
             Text(stringResource(R.string.no_entries_yet))
+        }
+
+        is BloodEntriesUIState.Error -> {
+            Toast.makeText(
+                LocalContext.current,
+                stringResource(id = entriesUIState.message), Toast.LENGTH_LONG
+            ).show()
         }
 
         is BloodEntriesUIState.Success -> {
