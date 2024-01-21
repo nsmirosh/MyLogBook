@@ -43,7 +43,11 @@ fun MainScreen(
     val entriesUiState by viewModel.entriesUIState.collectAsState()
     val inputTextUiState by viewModel.inputTextUIState.collectAsState()
 
-    var inputText by remember { mutableStateOf("") }
+    var inputText by remember { mutableStateOf(inputTextUiState) }
+
+    LaunchedEffect(inputTextUiState ) {
+        inputText = inputTextUiState
+    }
 
     MainScreenContent(
         modifier = modifier,
@@ -90,7 +94,9 @@ fun MainScreenContent(
         Text(stringResource(R.string.add_measurement))
         Row {
             RadioButton(selected = bloodMeasurementUiState.type == BmType.Mg, onClick = {
-                onConvertType(BmType.Mg)
+                if (bloodMeasurementUiState.type != BmType.Mg) {
+                    onConvertType(BmType.Mg)
+                }
             })
             Text(
                 modifier = Modifier.align(Alignment.CenterVertically),
@@ -99,7 +105,9 @@ fun MainScreenContent(
         }
         Row {
             RadioButton(selected = bloodMeasurementUiState.type == BmType.Mmol, onClick = {
-                onConvertType(BmType.Mmol)
+                if (bloodMeasurementUiState.type != BmType.Mmol) {
+                    onConvertType(BmType.Mmol)
+                }
             })
             Text(
                 modifier = Modifier.align(Alignment.CenterVertically),
