@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import nick.mirosh.logbook.R
+import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
 
 
@@ -36,7 +37,33 @@ fun MainScreen(
 ) {
     val uiState by viewModel.bloodMeasurementUIState.collectAsState()
     val entriesUIState by viewModel.entriesUIState.collectAsState()
+    val inputTextState by viewModel.inputTextUIState.collectAsState()
+    MainScreenContent(
+        modifier = modifier,
+        uiState = uiState,
+        inputTextState = inputTextState,
+        onConvertType = { viewModel.convertTo(it) },
+        isValidInput = { viewModel.isValidInput(it) },
+        onTextChanged = { viewModel.onTextChanged(it) },
+        onSave = { viewModel.saveBloodMeasurements() },
+        entriesUIState = entriesUIState
+    )
 
+}
+
+
+@Composable
+fun MainScreenContent(
+    modifier: Modifier,
+    uiState: BloodMeasurementUIState,
+    entriesUIState: BloodEntriesUIState,
+    inputTextState: String,
+    onConvertType: (BmType) -> Unit,
+    isValidInput: (String) -> Boolean,
+    onTextChanged: (String) -> Unit,
+    onSave: () -> Unit
+
+) {
     Column(
         modifier = modifier
             .padding(16.dp)
@@ -50,10 +77,10 @@ fun MainScreen(
                 .height(1.dp)
                 .background(Color.Black)
         )
-        Text("Add measurement")
+        Text(stringResource(R.string.add_measurement))
         Row {
             RadioButton(selected = uiState.type == BmType.Mg, onClick = {
-                viewModel.convertTo(BmType.Mg)
+                onConvertType(BmType.Mg)
             })
             Text(
                 modifier = Modifier.align(Alignment.CenterVertically),
@@ -62,7 +89,7 @@ fun MainScreen(
         }
         Row {
             RadioButton(selected = uiState.type == BmType.Mmol, onClick = {
-                viewModel.convertTo(BmType.Mmol)
+                onConvertType(BmType.Mmol)
             })
             Text(
                 modifier = Modifier.align(Alignment.CenterVertically),
@@ -74,7 +101,11 @@ fun MainScreen(
                 .padding(top = 16.dp)
                 .fillMaxWidth()
         ) {
-            InputText(viewModel)
+            InputText(
+                inputTextState,
+                onTextChanged = onTextChanged,
+                isValidInput = isValidInput
+            )
             Text(
                 modifier = Modifier
                     .padding(start = 16.dp)
@@ -83,7 +114,7 @@ fun MainScreen(
         }
         Button(
             onClick = {
-                viewModel.saveBloodMeasurements()
+                onSave()
             },
         ) {
             Text(stringResource(R.string.save))
@@ -92,29 +123,29 @@ fun MainScreen(
     }
 }
 
-
 @Composable
-fun InputText(viewModel: MainViewModel) {
+fun InputText(
+    inputText: String,
+    onTextChanged: (String) -> Unit,
+    isValidInput: (String) -> Boolean
+) {
 
-    val inputText by viewModel.inputTextUIState.collectAsState()
     TextField(value = inputText,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,
 
         onValueChange = {
-            if (viewModel.isValidInput(it)) {
-                viewModel.onTextChanged(it)
+            if (isValidInput(it)) {
+                onTextChanged(it)
             }
         })
-
 }
-
 
 @Composable
 fun EntriesList(entriesUIState: BloodEntriesUIState) {
     when (entriesUIState) {
         is BloodEntriesUIState.Empty -> {
-            Text("No entries yet")
+            Text(stringResource(R.string.no_entries_yet))
         }
 
         is BloodEntriesUIState.Success -> {
@@ -134,8 +165,28 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
 @Preview
 @Composable
 fun MainScreenPreview() {
-    MainScreen(
+    MainScreenContent(
         modifier = Modifier.background(color = Color.White),
-        viewModel = hiltViewModel()
+        uiState = BloodMeasurementUIState(
+            type = BmType.Mg,
+            average = "0"
+        ),
+        inputTextState = "34.9998",
+        entriesUIState = BloodEntriesUIState.Success(
+            entries = listOf(
+                BloodGlucoseEntry(
+                    type = BmType.Mg,
+                    value = 85.3894.toBigDecimal()
+                ),
+                BloodGlucoseEntry(
+                    type = BmType.Mmol,
+                    value = 5.3423.toBigDecimal()
+                )
+            )
+        ),
+        onConvertType = {},
+        isValidInput = { true },
+        onTextChanged = {},
+        onSave = {}
     )
 }
