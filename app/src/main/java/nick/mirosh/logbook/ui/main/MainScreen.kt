@@ -54,7 +54,7 @@ fun MainScreen(
         bloodMeasurementUiState = bloodMeasurementUiState,
         inputTextUiState = inputTextUiState,
         onConvertType = { viewModel.convertTo(inputText, it) },
-        onValidateInput = { viewModel.isValidInput(it) },
+        isValidInput = { viewModel.isValidInput(it) },
         onTextChanged = {
             inputText = it
         },
@@ -72,7 +72,7 @@ fun MainScreenContent(
     entriesUiState: BloodEntriesUIState,
     inputTextUiState: String,
     onConvertType: (BmType) -> Unit,
-    onValidateInput: (String) -> Boolean,
+    isValidInput: (String) -> Boolean,
     onTextChanged: (String) -> Unit,
     onSave: () -> Unit
 
@@ -121,7 +121,7 @@ fun MainScreenContent(
             InputText(
                 inputTextUiState,
                 onTextChanged = onTextChanged,
-                isValidInput = onValidateInput
+                isValidInput = isValidInput
             )
             Text(
                 modifier = Modifier
@@ -130,7 +130,7 @@ fun MainScreenContent(
             )
         }
         Button(
-            enabled = onValidateInput(inputTextUiState),
+            enabled = isValidInput(inputTextUiState),
             onClick = {
                 onSave()
             },
@@ -208,7 +208,7 @@ fun MainScreenPreview() {
             )
         ),
         onConvertType = {},
-        onValidateInput = { true },
+        isValidInput = { true },
         onTextChanged = {},
         onSave = {}
     )
