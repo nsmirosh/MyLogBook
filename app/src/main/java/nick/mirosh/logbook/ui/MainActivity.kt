@@ -14,7 +14,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import nick.mirosh.logbook.ui.main.MainScreen
 import nick.mirosh.logbook.ui.theme.LogBookTheme
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +32,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Remove unused code.
+ */
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
@@ -41,6 +43,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * Previews are good, but only if they show the screen ;)
+ */
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {

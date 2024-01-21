@@ -5,6 +5,9 @@ import java.math.BigDecimal
 import java.math.MathContext
 import javax.inject.Inject
 
+/**
+ * Move to BmType.
+ */
 const val MMOL_CONVERSION_FACTOR = 18.0182
 
 class ConvertMeasurementUseCase @Inject constructor() {
@@ -19,7 +22,9 @@ class ConvertMeasurementUseCase @Inject constructor() {
     }
 }
 
-
+/**
+ * You can have extension function like: Mmol.toMg() and Mg.toMmol()
+ */
 fun mmolToMg(mmol: BigDecimal): BigDecimal = mmol.multiply(BigDecimal(MMOL_CONVERSION_FACTOR))
 
 fun mgToMmol(mg: BigDecimal): BigDecimal =

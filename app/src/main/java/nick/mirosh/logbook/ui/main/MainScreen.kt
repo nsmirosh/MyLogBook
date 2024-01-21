@@ -29,6 +29,11 @@ import nick.mirosh.logbook.R
 import nick.mirosh.logbook.domain.model.BmType
 
 
+/**
+ * If you create a wrapper function that takes the viewmodel extract the state and send it to the
+ * screen function it will be much easier to use the preview, that means you can also show that you
+ * know how to send lambdas to into a function as well.
+ */
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
@@ -51,6 +56,10 @@ fun MainScreen(
                 .background(Color.Black)
         )
         Text("Add measurement")
+        /**
+         * You have 2 similar components,
+         * I would create a custom component here to illustrate re-usability.
+         */
         Row {
             RadioButton(selected = uiState.type == BmType.Mg, onClick = {
                 viewModel.convertTo(BmType.Mg)
