@@ -6,3 +6,5 @@ enum class BmType(val unit: String) {
     Mg("mg/Dl")
 }
 
+const val MMOL_CONVERSION_FACTOR = 18.0182
+

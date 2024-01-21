@@ -35,7 +35,7 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.bloodMeasurementUIState.collectAsState()
-    val entriesUIStates by viewModel.entriesUIState.collectAsState()
+    val entriesUIState by viewModel.entriesUIState.collectAsState()
 
     Column(
         modifier = modifier
@@ -88,7 +88,7 @@ fun MainScreen(
         ) {
             Text(stringResource(R.string.save))
         }
-        EntriesList(entriesUIStates)
+        EntriesList(entriesUIState)
     }
 }
 
@@ -111,14 +111,14 @@ fun InputText(viewModel: MainViewModel) {
 
 
 @Composable
-fun EntriesList(entriesUIStates: BloodEntriesUIState) {
-    when (entriesUIStates) {
+fun EntriesList(entriesUIState: BloodEntriesUIState) {
+    when (entriesUIState) {
         is BloodEntriesUIState.Empty -> {
             Text("No entries yet")
         }
 
         is BloodEntriesUIState.Success -> {
-            val entries = (entriesUIStates as BloodEntriesUIState.Success).entries
+            val entries = entriesUIState.entries
             LazyColumn {
                 items(entries.size) { index ->
                     Text(entries[index].toString())
@@ -135,7 +135,7 @@ fun EntriesList(entriesUIStates: BloodEntriesUIState) {
 @Composable
 fun MainScreenPreview() {
     MainScreen(
-        modifier = Modifier.background(color = androidx.compose.ui.graphics.Color.White),
-//        mainViewModel = hiltViewModel()
+        modifier = Modifier.background(color = Color.White),
+        viewModel = hiltViewModel()
     )
 }

@@ -5,34 +5,31 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
 import nick.mirosh.logbook.data.database.BloodMeasurementDao
+import nick.mirosh.logbook.data.mappers.toBmDatabaseEntry
+import nick.mirosh.logbook.data.mappers.toBmEntry
 import nick.mirosh.logbook.di.IoDispatcher
 import nick.mirosh.logbook.domain.DomainState
-import nick.mirosh.logbook.domain.model.BmEntry
-import nick.mirosh.logbook.domain.model.toBmDatabaseEntry
+import nick.mirosh.logbook.domain.data.BloodMeasurementsRepository
+import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import javax.inject.Inject
 
-interface BloodMeasurementsRepository {
-    suspend fun saveEntry(bmEntry: BmEntry): Flow<DomainState<Unit>>
-    suspend fun getEntries(): Flow<DomainState<List<BmEntry>>>
-}
 
-class BloodMeasureRepositoryImpl @Inject constructor(
+class BloodMeasurementRepositoryImpl @Inject constructor(
     private val bloodMeasurementDao: BloodMeasurementDao,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : BloodMeasurementsRepository {
 
-    override suspend fun saveEntry(bmEntry: BmEntry): Flow<DomainState<Unit>> =
+    override suspend fun saveEntry(bloodGlucoseEntry: BloodGlucoseEntry): Flow<DomainState<Unit>> =
         flow {
             emit(DomainState.Loading)
-            bloodMeasurementDao.insert(bmEntry.toBmDatabaseEntry())
+            bloodMeasurementDao.insert(bloodGlucoseEntry.toBmDatabaseEntry())
             emit(DomainState.Success(Unit))
         }.catch {
             emit(DomainState.Error(message = it.message))
         }.flowOn(dispatcher)
 
-    override suspend fun getEntries(): Flow<DomainState<List<BmEntry>>> =
+    override suspend fun getEntries(): Flow<DomainState<List<BloodGlucoseEntry>>> =
         flow {
             emit(DomainState.Loading)
             val entries = bloodMeasurementDao.getAllEntries().map { it.toBmEntry() }

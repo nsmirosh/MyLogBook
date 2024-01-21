@@ -1,6 +1,6 @@
 package nick.mirosh.logbook.domain.usecase
 
-import nick.mirosh.logbook.domain.model.BmEntry
+import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.closeTo
@@ -20,15 +20,15 @@ class GetAverageEntryValueUseCaseTest {
     fun execute_withMixedEntries_returnsMmolAverage() {
         //Arrange
         val entries = listOf(
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(54.0546),
                 type = BmType.Mg
             ),
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(3),
                 type = BmType.Mmol
             ),
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(6),
                 type = BmType.Mmol
             )
@@ -52,15 +52,15 @@ class GetAverageEntryValueUseCaseTest {
     fun execute_withMixedEntries_returnsMgAverage() {
         //Arrange
         val entries = listOf(
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(54.0546),
                 type = BmType.Mg
             ),
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(5),
                 type = BmType.Mmol
             ),
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(99.8434),
                 type = BmType.Mg
             )
@@ -82,7 +82,7 @@ class GetAverageEntryValueUseCaseTest {
     @Test
     fun execute_withEmptyEntriesList_returnsZero() {
         //Arrange
-        val entries = listOf<BmEntry>()
+        val entries = listOf<BloodGlucoseEntry>()
         val convertMeasurementUseCase = ConvertMeasurementUseCase()
         val usecase = GetAverageEntryValueUseCase(convertMeasurementUseCase)
         val expected = BigDecimal(0)

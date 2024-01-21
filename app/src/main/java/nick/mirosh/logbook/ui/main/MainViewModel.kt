@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import nick.mirosh.logbook.domain.DomainState
-import nick.mirosh.logbook.domain.model.BmEntry
+import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
 import nick.mirosh.logbook.domain.usecase.GetAverageEntryValueUseCase
 import nick.mirosh.logbook.domain.usecase.ConvertMeasurementUseCase
@@ -32,12 +32,13 @@ class MainViewModel @Inject constructor(
     private val _entriesUIState =
         MutableStateFlow<BloodEntriesUIState>(BloodEntriesUIState.Empty)
     val entriesUIState: StateFlow<BloodEntriesUIState> = _entriesUIState
+    //Exposing a separate flow to avoid unneccessary recomposition on the UI
     private val _inputTextUIState =
         MutableStateFlow("")
     val inputTextUIState: StateFlow<String> = _inputTextUIState
 
     private var inputBigDecimal = BigDecimal(0)
-    private var entries = mutableListOf<BmEntry>()
+    private var entries = mutableListOf<BloodGlucoseEntry>()
 
     init {
         getEntries()
@@ -66,7 +67,7 @@ class MainViewModel @Inject constructor(
 
     fun saveBloodMeasurements() {
         viewModelScope.launch {
-            val entry = BmEntry(
+            val entry = BloodGlucoseEntry(
                 type = _bloodMeasurementUIState.value.type,
                 value = inputBigDecimal
             )

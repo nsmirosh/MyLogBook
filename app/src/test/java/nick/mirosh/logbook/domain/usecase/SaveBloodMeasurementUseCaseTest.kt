@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.first
 import nick.mirosh.logbook.MainCoroutineRule
 import nick.mirosh.logbook.data.repositories.BloodMeasurementsRepository
 import nick.mirosh.logbook.domain.DomainState
-import nick.mirosh.logbook.domain.model.BmEntry
+import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -39,16 +39,16 @@ class SaveBloodMeasurementUseCaseTest {
     @Test
     fun execute_returnsSuccess() = mainCoroutineRule.runTest {
         // Arrange
-        val bmEntry = BmEntry(
+        val bloodGlucoseEntry = BloodGlucoseEntry(
             value = BigDecimal(54.0546),
             type = BmType.Mg
         )
         val expectedResponse = DomainState.Success(Unit)
         val flow = listOf(expectedResponse).asFlow()
-        `when`(bmRepository.saveEntry(bmEntry)).thenReturn(flow)
+        `when`(bmRepository.saveEntry(bloodGlucoseEntry)).thenReturn(flow)
 
         // Act
-        val response = saveBloodMeasurementUseCase(bmEntry).first()
+        val response = saveBloodMeasurementUseCase(bloodGlucoseEntry).first()
 
         // Assert
         assertEquals(expectedResponse, response)
@@ -58,16 +58,16 @@ class SaveBloodMeasurementUseCaseTest {
     @Test
     fun executeGetEntriesUseCase_returnsError() = mainCoroutineRule.runTest {
         // Arrange
-        val bmEntry = BmEntry(
+        val bloodGlucoseEntry = BloodGlucoseEntry(
             value = BigDecimal(54.0546),
             type = BmType.Mg
         )
         val expectedDataStateResponse = DomainState.Error("Error writing to the database")
         val flow = listOf(expectedDataStateResponse).asFlow()
-        `when`(bmRepository.saveEntry(bmEntry)).thenReturn(flow)
+        `when`(bmRepository.saveEntry(bloodGlucoseEntry)).thenReturn(flow)
 
         // Act
-        val actualDataStateResponse = saveBloodMeasurementUseCase(bmEntry).first()
+        val actualDataStateResponse = saveBloodMeasurementUseCase(bloodGlucoseEntry).first()
 
         // Assert
         assertEquals(expectedDataStateResponse, actualDataStateResponse)
@@ -77,16 +77,16 @@ class SaveBloodMeasurementUseCaseTest {
     @Test
     fun executeGetEntriesUseCase_returnsLoading() = mainCoroutineRule.runTest {
         // Arrange
-        val bmEntry = BmEntry(
+        val bloodGlucoseEntry = BloodGlucoseEntry(
             value = BigDecimal(54.0546),
             type = BmType.Mg
         )
         val expectedDataStateResponse = DomainState.Loading
         val flow = listOf(expectedDataStateResponse).asFlow()
-        `when`(bmRepository.saveEntry(bmEntry)).thenReturn(flow)
+        `when`(bmRepository.saveEntry(bloodGlucoseEntry)).thenReturn(flow)
 
         // Act
-        val response = saveBloodMeasurementUseCase(bmEntry).first()
+        val response = saveBloodMeasurementUseCase(bloodGlucoseEntry).first()
 
         // Assert
         assertEquals(expectedDataStateResponse, response)

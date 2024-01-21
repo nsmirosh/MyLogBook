@@ -1,11 +1,10 @@
 package nick.mirosh.logbook.domain.usecase
 
 import nick.mirosh.logbook.domain.model.BmType
+import nick.mirosh.logbook.domain.model.MMOL_CONVERSION_FACTOR
 import java.math.BigDecimal
 import java.math.MathContext
 import javax.inject.Inject
-
-const val MMOL_CONVERSION_FACTOR = 18.0182
 
 class ConvertMeasurementUseCase @Inject constructor() {
     operator fun invoke(typeToConvertTo: BmType, valueToConvert: BigDecimal): BigDecimal {

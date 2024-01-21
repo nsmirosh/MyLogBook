@@ -1,6 +1,6 @@
 package nick.mirosh.logbook.domain.usecase
 
-import nick.mirosh.logbook.domain.model.BmEntry
+import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -10,7 +10,7 @@ class GetAverageEntryValueUseCase @Inject constructor(
     private val convertMeasurementUseCase: ConvertMeasurementUseCase
 ) {
 
-    operator fun invoke(entries: List<BmEntry>, averageOnType: BmType): BigDecimal {
+    operator fun invoke(entries: List<BloodGlucoseEntry>, averageOnType: BmType): BigDecimal {
         if (entries.isEmpty()) return BigDecimal.ZERO
 
         val totalSum = entries.sumOf { entry ->

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.first
 import nick.mirosh.logbook.MainCoroutineRule
 import nick.mirosh.logbook.data.repositories.BloodMeasurementsRepository
 import nick.mirosh.logbook.domain.DomainState
-import nick.mirosh.logbook.domain.model.BmEntry
+import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -41,15 +41,15 @@ class GetEntriesUseCaseTest {
     fun executeGetEntriesUseCase_returnsSuccess() = mainCoroutineRule.runTest {
         // Arrange
         val expectedEntries = listOf(
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(54.0546),
                 type = BmType.Mg
             ),
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(3),
                 type = BmType.Mmol
             ),
-            BmEntry(
+            BloodGlucoseEntry(
                 value = BigDecimal(6),
                 type = BmType.Mmol
             )

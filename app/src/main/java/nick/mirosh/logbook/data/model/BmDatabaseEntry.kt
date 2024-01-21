@@ -2,7 +2,6 @@ package nick.mirosh.logbook.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import nick.mirosh.logbook.domain.model.BmEntry
 import nick.mirosh.logbook.domain.model.BmType
 import java.math.BigDecimal
 
@@ -12,10 +11,6 @@ data class BmDatabaseEntry(
     val type: BmType,
     val value: BigDecimal
 ) {
-    fun toBmEntry() = BmEntry(
-        type = type,
-        value = value
-    )
     override fun toString(): String {
         return "BmDatabaseEntry(id=$id, type=$type, value=$value)"
     }
