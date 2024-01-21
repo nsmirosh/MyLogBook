@@ -44,7 +44,6 @@ class MainViewModel @Inject constructor(
 
     fun convertTo(bloodMeasurementType: BmType) {
         input = convertMeasurementUseCase(bloodMeasurementType, input)
-//        val average = entries.averageValue(bloodMeasurementType)
         val average = getAverageEntryValueUseCase(entries, bloodMeasurementType)
         _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
             input = if (input == BigDecimal(0)) "" else formatBigDecimal(input),
@@ -70,8 +69,25 @@ class MainViewModel @Inject constructor(
                 type = _bloodMeasurementUIState.value.type,
                 value = input
             )
-            saveBloodMeasurementUseCase(entry)
-            getEntries()
+            saveBloodMeasurementUseCase(entry).collect {
+                when (it) {
+                    is DomainState.Success -> {
+//                        _entriesUIState.value = BloodEntriesUIState.Success(it.data)
+
+                        //TODo show successful save
+                        getEntries()
+                    }
+                    is DomainState.Error -> {
+//                        _entriesUIState.value = BloodEntriesUIState.Error(it.message)
+                    }
+                    is DomainState.Loading -> {
+                        _entriesUIState.value = BloodEntriesUIState.Loading
+                    }
+                    else -> {
+
+                    }
+                }
+            }
         }
     }
 
@@ -111,36 +127,4 @@ class MainViewModel @Inject constructor(
             value.toPlainString()
         else
             value.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-
-
-    private fun List<BmEntry>.averageValue(averageOnType: BmType): BigDecimal {
-        if (this.isEmpty()) return BigDecimal.ZERO
-
-        val mMolEntries = this.filter { it.type == BmType.Mmol }
-        val mMgEntries = this.filter { it.type == BmType.Mg }
-
-
-        var sum = BigDecimal.ZERO
-
-        if (averageOnType == BmType.Mmol) {
-            sum = mMolEntries.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
-            val convertedMgToMol = mMgEntries.map { mgToMmol(it.value) }
-            convertedMgToMol.forEach {
-                sum = sum.add(it)
-            }
-        } else {
-            sum = mMgEntries.fold(BigDecimal.ZERO) { sum, entry -> sum.add(entry.value) }
-            val convertedMolToMg = mMolEntries .map { mmolToMg(it.value) }
-            convertedMolToMg.forEach {
-                sum = sum.add(it)
-            }
-        }
-
-        return sum.divide(
-            BigDecimal(this.size),
-            5,
-            RoundingMode.HALF_UP
-        )
-    }
-
 }

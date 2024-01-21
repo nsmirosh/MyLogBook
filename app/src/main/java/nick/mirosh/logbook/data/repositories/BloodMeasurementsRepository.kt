@@ -14,8 +14,8 @@ import nick.mirosh.logbook.domain.model.toBmDatabaseEntry
 import javax.inject.Inject
 
 interface BloodMeasurementsRepository {
-    suspend fun saveEntry(bmEntry: BmEntry)
-    suspend fun getEntries(): Flow<DomainState<List< BmEntry>>>
+    suspend fun saveEntry(bmEntry: BmEntry): Flow<DomainState<Unit>>
+    suspend fun getEntries(): Flow<DomainState<List<BmEntry>>>
 }
 
 class BloodMeasureRepositoryImpl @Inject constructor(
@@ -23,14 +23,19 @@ class BloodMeasureRepositoryImpl @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : BloodMeasurementsRepository {
 
-    override suspend fun saveEntry(bmEntry: BmEntry) {
-        bloodMeasurementDao.insert(bmEntry.toBmDatabaseEntry())
-    }
+    override suspend fun saveEntry(bmEntry: BmEntry): Flow<DomainState<Unit>> =
+        flow {
+            emit(DomainState.Loading)
+            bloodMeasurementDao.insert(bmEntry.toBmDatabaseEntry())
+            emit(DomainState.Success(Unit))
+        }.catch {
+            emit(DomainState.Error(message = it.message))
+        }.flowOn(dispatcher)
 
     override suspend fun getEntries(): Flow<DomainState<List<BmEntry>>> =
         flow {
             emit(DomainState.Loading)
-            val entries = bloodMeasurementDao.getAllEntries().map { it.toBmEntry()}
+            val entries = bloodMeasurementDao.getAllEntries().map { it.toBmEntry() }
             val dataState =
                 if (entries.isEmpty()) DomainState.Empty else DomainState.Success(entries)
             emit(dataState)
