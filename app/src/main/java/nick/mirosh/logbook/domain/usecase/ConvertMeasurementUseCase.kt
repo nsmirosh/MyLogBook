@@ -8,16 +8,15 @@ import javax.inject.Inject
 const val MMOL_CONVERSION_FACTOR = 18.0182
 
 class ConvertMeasurementUseCase @Inject constructor() {
-    operator fun invoke(typeToConvertTo: BmType, toConvert: BigDecimal) =
-        if (toConvert != BigDecimal(0)) {
-            if (typeToConvertTo == BmType.Mmol)
-                mgToMmol(toConvert)
-            else
-                mmolToMg(toConvert)
-        } else {
-            BigDecimal(0)
+    operator fun invoke(typeToConvertTo: BmType, valueToConvert: BigDecimal): BigDecimal {
+        if (valueToConvert == BigDecimal(0)) {
+            return BigDecimal(0)
         }
-
+        return if (typeToConvertTo == BmType.Mmol)
+            mgToMmol(valueToConvert)
+        else
+            mmolToMg(valueToConvert)
+    }
 }
 
 

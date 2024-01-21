@@ -12,7 +12,7 @@ import javax.inject.Inject
 class GetEntriesUseCase @Inject constructor(
     private val bloodMeasurementsRepository: BloodMeasurementsRepository,
 ) {
-    operator suspend fun invoke(): Flow<DomainState<List<BmEntry>>> =
+    suspend operator fun invoke(): Flow<DomainState<List<BmEntry>>> =
         bloodMeasurementsRepository.getEntries()
 
 }
