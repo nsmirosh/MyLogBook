@@ -189,7 +189,10 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
             }
         }
 
-        else -> {}
+        is BloodEntriesUIState.Loading -> {
+            Text(stringResource(R.string.loading))
+        }
+
     }
 }
 
