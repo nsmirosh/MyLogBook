@@ -13,11 +13,19 @@ import nick.mirosh.logbook.domain.model.BmEntry
 import nick.mirosh.logbook.domain.model.toBmDatabaseEntry
 import javax.inject.Inject
 
+/**
+ * Architecture: For clean architecture move the interface to domain layer.
+ */
 interface BloodMeasurementsRepository {
     suspend fun saveEntry(bmEntry: BmEntry): Flow<DomainState<Unit>>
     suspend fun getEntries(): Flow<DomainState<List<BmEntry>>>
 }
 
+/**
+ * Naming: BloodMeasureRepositorySql to give a better understanding of the implementation.
+ * Let's say you have 2 different implementation of the same repository, they can't both
+ * be named *Impl
+ */
 class BloodMeasureRepositoryImpl @Inject constructor(
     private val bloodMeasurementDao: BloodMeasurementDao,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
