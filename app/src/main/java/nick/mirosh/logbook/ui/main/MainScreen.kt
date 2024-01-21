@@ -54,10 +54,9 @@ fun MainScreen(
         bloodMeasurementUiState = bloodMeasurementUiState,
         inputTextUiState = inputTextUiState,
         onConvertType = { viewModel.convertTo(inputText, it) },
-        isValidInput = { viewModel.isValidInput(it) },
+        onValidateInput = { viewModel.isValidInput(it) },
         onTextChanged = {
             inputText = it
-//            viewModel.onTextChanged(it)
         },
         onSave = { viewModel.saveBloodMeasurements(inputText) },
         entriesUiState = entriesUiState
@@ -73,7 +72,7 @@ fun MainScreenContent(
     entriesUiState: BloodEntriesUIState,
     inputTextUiState: String,
     onConvertType: (BmType) -> Unit,
-    isValidInput: (String) -> Boolean,
+    onValidateInput: (String) -> Boolean,
     onTextChanged: (String) -> Unit,
     onSave: () -> Unit
 
@@ -122,7 +121,7 @@ fun MainScreenContent(
             InputText(
                 inputTextUiState,
                 onTextChanged = onTextChanged,
-                isValidInput = isValidInput
+                isValidInput = onValidateInput
             )
             Text(
                 modifier = Modifier
@@ -131,6 +130,7 @@ fun MainScreenContent(
             )
         }
         Button(
+            enabled = onValidateInput(inputTextUiState),
             onClick = {
                 onSave()
             },
@@ -147,7 +147,6 @@ fun InputText(
     onTextChanged: (String) -> Unit,
     isValidInput: (String) -> Boolean
 ) {
-
     var text by remember { mutableStateOf(inputText) }
 
     LaunchedEffect(inputText) {
@@ -209,7 +208,7 @@ fun MainScreenPreview() {
             )
         ),
         onConvertType = {},
-        isValidInput = { true },
+        onValidateInput = { true },
         onTextChanged = {},
         onSave = {}
     )

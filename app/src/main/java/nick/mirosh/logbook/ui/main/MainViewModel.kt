@@ -32,12 +32,13 @@ class MainViewModel @Inject constructor(
     private val _entriesUIState =
         MutableStateFlow<BloodEntriesUIState>(BloodEntriesUIState.Empty)
     val entriesUIState: StateFlow<BloodEntriesUIState> = _entriesUIState
+
     //Exposing a separate flow to avoid unneccessary recomposition on the UI
     private val _inputTextUIState =
         MutableStateFlow("")
     val inputTextUIState: StateFlow<String> = _inputTextUIState
 
-//    private var inputBigDecimal = BigDecimal(0)
+    //    private var inputBigDecimal = BigDecimal(0)
     private var entries = mutableListOf<BloodGlucoseEntry>()
 
     init {
@@ -56,20 +57,12 @@ class MainViewModel @Inject constructor(
 //    }
 
     fun convertTo(text: String, bloodMeasurementType: BmType) {
+        if (text.isNotEmpty() && text != ".") {
+            val converted = convertMeasurementUseCase(bloodMeasurementType, text.toBigDecimal())
+            _inputTextUIState.value = formatBigDecimal(converted)
+        }
 
-//        if (text.isEmpty()) {
-//            _inputTextUIState.value = ""
-//            inputBigDecimal = BigDecimal(0)
-//            return
-//        }
-
-//        inputBigDecimal = convertMeasurementUseCase(bloodMeasurementType, inputBigDecimal)
-        //TODO validate input before coming to this point
         val average = getAverageEntryValueUseCase(entries, bloodMeasurementType)
-        val converted = convertMeasurementUseCase(bloodMeasurementType, text.toBigDecimal())
-        _inputTextUIState.value = formatBigDecimal(converted)
-
-//            if (inputBigDecimal == BigDecimal(0)) "" else formatBigDecimal(inputBigDecimal)
         _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
             average = formatBigDecimal(average),
             type = bloodMeasurementType
