@@ -4,8 +4,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.first
 import nick.mirosh.logbook.MainCoroutineRule
-import nick.mirosh.logbook.data.repositories.BloodMeasurementsRepository
 import nick.mirosh.logbook.domain.DomainState
+import nick.mirosh.logbook.domain.data.BloodMeasurementsRepository
 import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
 import org.junit.Assert.assertEquals

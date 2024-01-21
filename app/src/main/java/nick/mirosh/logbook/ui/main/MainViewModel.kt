@@ -43,16 +43,16 @@ class MainViewModel @Inject constructor(
         getEntries()
     }
 
-    fun convertTo(text: String, bloodMeasurementType: BmType) {
+    fun convertMeasurement(text: String, typeToConvertTo: BmType) {
         if (text.isNotEmpty() && text != ".") {
-            val converted = convertMeasurementUseCase(bloodMeasurementType, text.toBigDecimal())
+            val converted = convertMeasurementUseCase(typeToConvertTo, text.toBigDecimal())
             _inputTextUIState.value = formatBigDecimal(converted)
         }
 
-        val average = getAverageEntryValueUseCase(entries, bloodMeasurementType)
+        val average = getAverageEntryValueUseCase(entries, typeToConvertTo)
         _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
             average = formatBigDecimal(average),
-            type = bloodMeasurementType
+            type = typeToConvertTo
         )
     }
 
@@ -71,7 +71,7 @@ class MainViewModel @Inject constructor(
                     }
 
                     is DomainState.Error -> {
-
+                        _entriesUIState.value = BloodEntriesUIState.Error
                     }
 
                     is DomainState.Loading -> {
@@ -102,10 +102,9 @@ class MainViewModel @Inject constructor(
                                     average = formatBigDecimal(average),
                                 )
                         }
-
                         is DomainState.Empty -> BloodEntriesUIState.Empty
-
-                        else -> {}
+                        is DomainState.Error -> BloodEntriesUIState.Error
+                        is DomainState.Loading -> BloodEntriesUIState.Loading
                     }
                 }
         }

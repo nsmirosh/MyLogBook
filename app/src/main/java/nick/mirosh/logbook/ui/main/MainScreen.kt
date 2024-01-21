@@ -53,7 +53,7 @@ fun MainScreen(
         modifier = modifier,
         bloodMeasurementUiState = bloodMeasurementUiState,
         inputTextUiState = inputTextUiState,
-        onConvertType = { viewModel.convertTo(inputText, it) },
+        onConvertType = { viewModel.convertMeasurement(inputText, it) },
         isValidInput = { viewModel.isValidInput(it) },
         onTextChanged = {
             inputText = it
@@ -194,9 +194,13 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
             }
         }
 
-        is BloodEntriesUIState.Loading -> {
+        is BloodEntriesUIState.Loading ->
             Text(stringResource(R.string.loading))
-        }
+
+
+        is BloodEntriesUIState.Error ->
+            Text(stringResource(R.string.entries_error))
+
     }
 }
 
