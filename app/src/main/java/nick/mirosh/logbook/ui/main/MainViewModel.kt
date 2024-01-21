@@ -34,6 +34,9 @@ class MainViewModel @Inject constructor(
     private val _entriesUIState =
         MutableStateFlow<BloodEntriesUIState>(BloodEntriesUIState.Empty)
     val entriesUIState: StateFlow<BloodEntriesUIState> = _entriesUIState
+    private val _text =
+        MutableStateFlow("")
+    val text: StateFlow<String> = _text
 
     private var input = BigDecimal(0)
     private var entries = mutableListOf<BmEntry>()
@@ -56,6 +59,7 @@ class MainViewModel @Inject constructor(
         //TODO make sure the whole layout is not recomposing when I'm entering the text
         if (inputText.isEmpty()) {
             _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(input = "")
+            input = BigDecimal(0)
             return
         }
         input = inputText.toBigDecimal()
