@@ -37,43 +37,69 @@ class MainViewModel @Inject constructor(
         MutableStateFlow("")
     val inputTextUIState: StateFlow<String> = _inputTextUIState
 
-    private var inputBigDecimal = BigDecimal(0)
+//    private var inputBigDecimal = BigDecimal(0)
     private var entries = mutableListOf<BloodGlucoseEntry>()
 
     init {
         getEntries()
     }
 
-    fun convertTo(bloodMeasurementType: BmType) {
-        inputBigDecimal = convertMeasurementUseCase(bloodMeasurementType, inputBigDecimal)
+//    fun convertTo(bloodMeasurementType: BmType) {
+//        inputBigDecimal = convertMeasurementUseCase(bloodMeasurementType, inputBigDecimal)
+//        val average = getAverageEntryValueUseCase(entries, bloodMeasurementType)
+//        _inputTextUIState.value =
+//            if (inputBigDecimal == BigDecimal(0)) "" else formatBigDecimal(inputBigDecimal)
+//        _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
+//            average = formatBigDecimal(average),
+//            type = bloodMeasurementType
+//        )
+//    }
+
+    fun convertTo(text: String, bloodMeasurementType: BmType) {
+
+//        if (text.isEmpty()) {
+//            _inputTextUIState.value = ""
+//            inputBigDecimal = BigDecimal(0)
+//            return
+//        }
+
+//        inputBigDecimal = convertMeasurementUseCase(bloodMeasurementType, inputBigDecimal)
+        //TODO validate input before coming to this point
         val average = getAverageEntryValueUseCase(entries, bloodMeasurementType)
-        _inputTextUIState.value =
-            if (inputBigDecimal == BigDecimal(0)) "" else formatBigDecimal(inputBigDecimal)
+        val converted = convertMeasurementUseCase(bloodMeasurementType, text.toBigDecimal())
+        _inputTextUIState.value = formatBigDecimal(converted)
+
+//            if (inputBigDecimal == BigDecimal(0)) "" else formatBigDecimal(inputBigDecimal)
         _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
             average = formatBigDecimal(average),
             type = bloodMeasurementType
         )
     }
 
-    fun onTextChanged(inputText: String) {
-        if (inputText.isEmpty()) {
-            _inputTextUIState.value = ""
-            inputBigDecimal = BigDecimal(0)
-            return
-        }
-        inputBigDecimal = inputText.toBigDecimal()
-        _inputTextUIState.value = inputText
-    }
+//    fun onTextChanged(inputText: String) {
+//        if (inputText.isEmpty()) {
+//            _inputTextUIState.value = ""
+//            inputBigDecimal = BigDecimal(0)
+//            return
+//        }
+//        inputBigDecimal = inputText.toBigDecimal()
+//        _inputTextUIState.value = inputText
+//    }
 
-    fun saveBloodMeasurements() {
+    fun saveBloodMeasurements(text: String) {
+        //TODO make sure input is validated here beforehand
+
+
         viewModelScope.launch {
             val entry = BloodGlucoseEntry(
                 type = _bloodMeasurementUIState.value.type,
-                value = inputBigDecimal
+                value = text.toBigDecimal()
             )
             saveBloodMeasurementUseCase(entry).collect {
                 when (it) {
                     is DomainState.Success -> {
+
+                        _inputTextUIState.value = ""
                         getEntries()
                     }
 
@@ -92,6 +118,33 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+//    fun saveBloodMeasurements() {
+//        viewModelScope.launch {
+//            val entry = BloodGlucoseEntry(
+//                type = _bloodMeasurementUIState.value.type,
+//                value = inputBigDecimal
+//            )
+//            saveBloodMeasurementUseCase(entry).collect {
+//                when (it) {
+//                    is DomainState.Success -> {
+//                        getEntries()
+//                    }
+//
+//                    is DomainState.Error -> {
+//
+//                    }
+//
+//                    is DomainState.Loading -> {
+//                        _entriesUIState.value = BloodEntriesUIState.Loading
+//                    }
+//
+//                    else -> {
+//
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     private fun getEntries() {
         viewModelScope.launch {
@@ -104,8 +157,6 @@ class MainViewModel @Inject constructor(
                             entries.addAll(domainState.data)
                             val type = bloodMeasurementUIState.value.type
                             val average = getAverageEntryValueUseCase(entries, type)
-                            inputBigDecimal = BigDecimal(0)
-                            _inputTextUIState.value = ""
                             _bloodMeasurementUIState.value =
                                 bloodMeasurementUIState.value.copy(
                                     average = formatBigDecimal(average),
@@ -119,6 +170,32 @@ class MainViewModel @Inject constructor(
                 }
         }
     }
+//    private fun getEntries() {
+//        viewModelScope.launch {
+//            getEntriesUseCase()
+//                .collect { domainState ->
+//                    when (domainState) {
+//                        is DomainState.Success -> {
+//                            _entriesUIState.value = BloodEntriesUIState.Success(domainState.data)
+//                            entries.clear()
+//                            entries.addAll(domainState.data)
+//                            val type = bloodMeasurementUIState.value.type
+//                            val average = getAverageEntryValueUseCase(entries, type)
+//                            inputBigDecimal = BigDecimal(0)
+//                            _inputTextUIState.value = ""
+//                            _bloodMeasurementUIState.value =
+//                                bloodMeasurementUIState.value.copy(
+//                                    average = formatBigDecimal(average),
+//                                )
+//                        }
+//
+//                        is DomainState.Empty -> BloodEntriesUIState.Empty
+//
+//                        else -> {}
+//                    }
+//                }
+//        }
+//    }
 
     private fun formatBigDecimal(value: BigDecimal) =
         if (value.stripTrailingZeros().scale() <= 0)

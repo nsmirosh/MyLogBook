@@ -15,8 +15,12 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,15 +42,21 @@ fun MainScreen(
     val bloodMeasurementUiState by viewModel.bloodMeasurementUIState.collectAsState()
     val entriesUiState by viewModel.entriesUIState.collectAsState()
     val inputTextUiState by viewModel.inputTextUIState.collectAsState()
+
+    var inputText by remember { mutableStateOf("") }
+
     MainScreenContent(
         modifier = modifier,
         bloodMeasurementUiState = bloodMeasurementUiState,
-        inputTextState = inputTextUiState,
-        onConvertType = { viewModel.convertTo(it) },
+        inputTextUiState = inputTextUiState,
+        onConvertType = { viewModel.convertTo(inputText, it) },
         isValidInput = { viewModel.isValidInput(it) },
-        onTextChanged = { viewModel.onTextChanged(it) },
-        onSave = { viewModel.saveBloodMeasurements() },
-        entriesUIState = entriesUiState
+        onTextChanged = {
+            inputText = it
+//            viewModel.onTextChanged(it)
+        },
+        onSave = { viewModel.saveBloodMeasurements(inputText) },
+        entriesUiState = entriesUiState
     )
 
 }
@@ -56,8 +66,8 @@ fun MainScreen(
 fun MainScreenContent(
     modifier: Modifier,
     bloodMeasurementUiState: BloodMeasurementUIState,
-    entriesUIState: BloodEntriesUIState,
-    inputTextState: String,
+    entriesUiState: BloodEntriesUIState,
+    inputTextUiState: String,
     onConvertType: (BmType) -> Unit,
     isValidInput: (String) -> Boolean,
     onTextChanged: (String) -> Unit,
@@ -102,7 +112,7 @@ fun MainScreenContent(
                 .fillMaxWidth()
         ) {
             InputText(
-                inputTextState,
+                inputTextUiState,
                 onTextChanged = onTextChanged,
                 isValidInput = isValidInput
             )
@@ -119,7 +129,7 @@ fun MainScreenContent(
         ) {
             Text(stringResource(R.string.save))
         }
-        EntriesList(entriesUIState)
+        EntriesList(entriesUiState)
     }
 }
 
@@ -130,13 +140,19 @@ fun InputText(
     isValidInput: (String) -> Boolean
 ) {
 
-    TextField(value = inputText,
+    var text by remember { mutableStateOf(inputText) }
+
+    LaunchedEffect(inputText) {
+        text = inputText
+    }
+    TextField(value = text,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,
 
         onValueChange = {
             if (isValidInput(it)) {
                 onTextChanged(it)
+                text = it
             }
         })
 }
@@ -171,8 +187,8 @@ fun MainScreenPreview() {
             type = BmType.Mg,
             average = "0"
         ),
-        inputTextState = "34.9998",
-        entriesUIState = BloodEntriesUIState.Success(
+        inputTextUiState = "34.9998",
+        entriesUiState = BloodEntriesUIState.Success(
             entries = listOf(
                 BloodGlucoseEntry(
                     type = BmType.Mg,
