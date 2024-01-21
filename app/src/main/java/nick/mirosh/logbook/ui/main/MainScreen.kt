@@ -82,7 +82,13 @@ fun MainScreenContent(
             .padding(16.dp)
             .fillMaxSize()
     ) {
-        Text("Your average is ${bloodMeasurementUiState.average} ${bloodMeasurementUiState.type}")
+        Text(
+            text = stringResource(
+                R.string.average_blood_measurement,
+                bloodMeasurementUiState.average,
+                bloodMeasurementUiState.type
+            )
+        )
         Box(
             modifier = Modifier
                 .padding(top = 16.dp, bottom = 16.dp)
@@ -170,7 +176,6 @@ fun Input(
         }
     }
 
-
 }
 
 @Composable
@@ -192,7 +197,6 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
         is BloodEntriesUIState.Loading -> {
             Text(stringResource(R.string.loading))
         }
-
     }
 }
 
