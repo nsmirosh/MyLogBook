@@ -13,8 +13,6 @@ import nick.mirosh.logbook.domain.usecase.GetAverageEntryValueUseCase
 import nick.mirosh.logbook.domain.usecase.ConvertMeasurementUseCase
 import nick.mirosh.logbook.domain.usecase.GetEntriesUseCase
 import nick.mirosh.logbook.domain.usecase.SaveBloodMeasurementUseCase
-import nick.mirosh.logbook.domain.usecase.mgToMmol
-import nick.mirosh.logbook.domain.usecase.mmolToMg
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -34,11 +32,11 @@ class MainViewModel @Inject constructor(
     private val _entriesUIState =
         MutableStateFlow<BloodEntriesUIState>(BloodEntriesUIState.Empty)
     val entriesUIState: StateFlow<BloodEntriesUIState> = _entriesUIState
-    private val _text =
+    private val _inputTextUIState =
         MutableStateFlow("")
-    val text: StateFlow<String> = _text
+    val inputTextUIState: StateFlow<String> = _inputTextUIState
 
-    private var input = BigDecimal(0)
+    private var inputBigDecimal = BigDecimal(0)
     private var entries = mutableListOf<BmEntry>()
 
     init {
@@ -46,47 +44,46 @@ class MainViewModel @Inject constructor(
     }
 
     fun convertTo(bloodMeasurementType: BmType) {
-        input = convertMeasurementUseCase(bloodMeasurementType, input)
+        inputBigDecimal = convertMeasurementUseCase(bloodMeasurementType, inputBigDecimal)
         val average = getAverageEntryValueUseCase(entries, bloodMeasurementType)
+        _inputTextUIState.value =
+            if (inputBigDecimal == BigDecimal(0)) "" else formatBigDecimal(inputBigDecimal)
         _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(
-            input = if (input == BigDecimal(0)) "" else formatBigDecimal(input),
             average = formatBigDecimal(average),
             type = bloodMeasurementType
         )
     }
 
     fun onTextChanged(inputText: String) {
-        //TODO make sure the whole layout is not recomposing when I'm entering the text
         if (inputText.isEmpty()) {
-            _bloodMeasurementUIState.value = _bloodMeasurementUIState.value.copy(input = "")
-            input = BigDecimal(0)
+            _inputTextUIState.value = ""
+            inputBigDecimal = BigDecimal(0)
             return
         }
-        input = inputText.toBigDecimal()
-        _bloodMeasurementUIState.value =
-            _bloodMeasurementUIState.value.copy(input = inputText)
+        inputBigDecimal = inputText.toBigDecimal()
+        _inputTextUIState.value = inputText
     }
 
     fun saveBloodMeasurements() {
         viewModelScope.launch {
             val entry = BmEntry(
                 type = _bloodMeasurementUIState.value.type,
-                value = input
+                value = inputBigDecimal
             )
             saveBloodMeasurementUseCase(entry).collect {
                 when (it) {
                     is DomainState.Success -> {
-//                        _entriesUIState.value = BloodEntriesUIState.Success(it.data)
-
-                        //TODo show successful save
                         getEntries()
                     }
+
                     is DomainState.Error -> {
-//                        _entriesUIState.value = BloodEntriesUIState.Error(it.message)
+
                     }
+
                     is DomainState.Loading -> {
                         _entriesUIState.value = BloodEntriesUIState.Loading
                     }
+
                     else -> {
 
                     }
@@ -102,19 +99,15 @@ class MainViewModel @Inject constructor(
                     when (domainState) {
                         is DomainState.Success -> {
                             _entriesUIState.value = BloodEntriesUIState.Success(domainState.data)
-
-                            //TODO don't know if introducing another global var is a good idea
                             entries.clear()
                             entries.addAll(domainState.data)
-                            val type = _bloodMeasurementUIState.value.type
+                            val type = bloodMeasurementUIState.value.type
                             val average = getAverageEntryValueUseCase(entries, type)
-//                            val average = entries.averageValue(type)
-
-                            input = BigDecimal(0)
+                            inputBigDecimal = BigDecimal(0)
+                            _inputTextUIState.value = ""
                             _bloodMeasurementUIState.value =
-                                _bloodMeasurementUIState.value.copy(
+                                bloodMeasurementUIState.value.copy(
                                     average = formatBigDecimal(average),
-                                    input = "",
                                 )
                         }
 
@@ -131,4 +124,8 @@ class MainViewModel @Inject constructor(
             value.toPlainString()
         else
             value.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+
+    fun isValidInput(inputText: String) =
+        inputText.isEmpty() || inputText != "." || inputText.toDoubleOrNull()
+            ?.let { number -> number > 0 } == true
 }

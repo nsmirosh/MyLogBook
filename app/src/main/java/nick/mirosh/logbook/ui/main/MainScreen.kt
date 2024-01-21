@@ -34,87 +34,99 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel()
 ) {
-
     val uiState by viewModel.bloodMeasurementUIState.collectAsState()
     val entriesUIStates by viewModel.entriesUIState.collectAsState()
 
-    with(uiState) {
-        Column(
-            modifier = modifier
-                .padding(16.dp)
-                .fillMaxSize()
-        ) {
-            Text("Your average is $average $type")
-            Box(
-                modifier = Modifier
-                    .padding(top = 16.dp, bottom = 16.dp)
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(Color.Black)
+    Column(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxSize()
+    ) {
+        Text("Your average is ${uiState.average} ${uiState.type}")
+        Box(
+            modifier = Modifier
+                .padding(top = 16.dp, bottom = 16.dp)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(Color.Black)
+        )
+        Text("Add measurement")
+        Row {
+            RadioButton(selected = uiState.type == BmType.Mg, onClick = {
+                viewModel.convertTo(BmType.Mg)
+            })
+            Text(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                text = BmType.Mg.unit
             )
-            Text("Add measurement")
-            Row {
-                RadioButton(selected = type == BmType.Mg, onClick = {
-                    viewModel.convertTo(BmType.Mg)
-                })
-                Text(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    text = BmType.Mg.unit
-                )
-            }
-            Row {
-                RadioButton(selected = type == BmType.Mmol, onClick = {
-                    viewModel.convertTo(BmType.Mmol)
-                })
-                Text(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    text = BmType.Mmol.unit
-                )
-            }
-            Row(
+        }
+        Row {
+            RadioButton(selected = uiState.type == BmType.Mmol, onClick = {
+                viewModel.convertTo(BmType.Mmol)
+            })
+            Text(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                text = BmType.Mmol.unit
+            )
+        }
+        Row(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
+        ) {
+            InputText(viewModel)
+            Text(
                 modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-            ) {
-                TextField(value = input,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
+                    .padding(start = 16.dp)
+                    .align(Alignment.CenterVertically), text = uiState.type.unit
+            )
+        }
+        Button(
+            onClick = {
+                viewModel.saveBloodMeasurements()
+            },
+        ) {
+            Text(stringResource(R.string.save))
+        }
+        EntriesList(entriesUIStates)
+    }
+}
 
-                    onValueChange = {
-                        if (it.isEmpty() || it == "." || it.toDoubleOrNull()
-                                ?.let { number -> number > 0 } == true
-                        ) {
-                            viewModel.onTextChanged(it)
-                        }
-                    })
-                Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp)
-                        .align(Alignment.CenterVertically), text = type.unit
-                )
+
+@Composable
+fun InputText(viewModel: MainViewModel) {
+
+    val inputText by viewModel.inputTextUIState.collectAsState()
+    TextField(value = inputText,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+
+        onValueChange = {
+            if (viewModel.isValidInput(it)) {
+                viewModel.onTextChanged(it)
             }
-            Button(
-                onClick = {
-                    viewModel.saveBloodMeasurements()
-                },
-            ) {
-                Text(stringResource(R.string.save))
-            }
-            when (entriesUIStates) {
-                is BloodEntriesUIState.Empty -> {
-                    Text("No entries yet")
+        })
+
+}
+
+
+@Composable
+fun EntriesList(entriesUIStates: BloodEntriesUIState) {
+    when (entriesUIStates) {
+        is BloodEntriesUIState.Empty -> {
+            Text("No entries yet")
+        }
+
+        is BloodEntriesUIState.Success -> {
+            val entries = (entriesUIStates as BloodEntriesUIState.Success).entries
+            LazyColumn {
+                items(entries.size) { index ->
+                    Text(entries[index].toString())
                 }
-                is BloodEntriesUIState.Success -> {
-                    val entries = (entriesUIStates as BloodEntriesUIState.Success).entries
-                    LazyColumn {
-                        items(entries.size) { index ->
-                            Text(entries[index].toString())
-                        }
-                    }
-                }
-                else -> {}
             }
         }
+
+        else -> {}
     }
 }
 
