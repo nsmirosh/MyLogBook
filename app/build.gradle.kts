@@ -82,6 +82,13 @@ dependencies {
     implementation("androidx.compose.material3:material3")
 
     //Test
+
+    testImplementation ("org.mockito:mockito-core:4.8.0")
+    testImplementation ("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation ("org.mockito:mockito-inline:4.7.0")
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
+
     testImplementation("junit:junit:4.13.2")
     testImplementation ("org.hamcrest:hamcrest-all:1.3")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
