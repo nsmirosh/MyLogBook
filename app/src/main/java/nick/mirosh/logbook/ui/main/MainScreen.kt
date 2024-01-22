@@ -204,7 +204,15 @@ fun Input(
 fun EntriesList(entriesUIState: BloodEntriesUIState) {
     when (entriesUIState) {
         is BloodEntriesUIState.Empty -> {
-            Text(stringResource(R.string.no_entries_yet))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(stringResource(R.string.no_entries_yet))
+            }
         }
 
         is BloodEntriesUIState.Success -> {
