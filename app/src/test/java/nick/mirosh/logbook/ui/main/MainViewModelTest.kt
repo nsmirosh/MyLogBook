@@ -3,6 +3,7 @@ package nick.mirosh.logbook.ui.main
 import android.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -25,7 +26,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
 import java.math.BigDecimal
 
 
@@ -39,10 +39,19 @@ class MainViewModelTest {
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
 
-    private val saveBloodMeasurementUseCase = mock(SaveBloodMeasurementUseCase::class.java)
-    private val getEntriesUseCase = mock(GetEntriesUseCase::class.java)
-    private val convertMeasurementUseCase = mock(ConvertMeasurementUseCase::class.java)
-    private val getAverageEntryValueUseCase = mock(GetAverageEntryValueUseCase::class.java)
+    private lateinit var saveBloodMeasurementUseCase: SaveBloodMeasurementUseCase
+    private lateinit var getEntriesUseCase: GetEntriesUseCase
+    private lateinit var convertMeasurementUseCase: ConvertMeasurementUseCase
+    private lateinit var getAverageEntryValueUseCase: GetAverageEntryValueUseCase
+
+
+    @Before
+    fun setUp() {
+        saveBloodMeasurementUseCase = mock(SaveBloodMeasurementUseCase::class.java)
+        getEntriesUseCase = mock(GetEntriesUseCase::class.java)
+        convertMeasurementUseCase = mock(ConvertMeasurementUseCase::class.java)
+        getAverageEntryValueUseCase = mock(GetAverageEntryValueUseCase::class.java)
+    }
 
     @Test
     fun convertMeasurement_updatesTypeAndAverageUiState() = mainCoroutineRule.runTest {
@@ -92,9 +101,8 @@ class MainViewModelTest {
 
 
     @Test
-    fun saveBloodMeasurement_emitsEmptyStateAndSuccess() = mainCoroutineRule.runTest {
+    fun saveBloodMeasurement_emitsExpectedEntries() = mainCoroutineRule.runTest {
         // Arrange
-
         val expectedEntries = listOf(
             BloodGlucoseEntry(
                 value = BigDecimal(54.0546),
@@ -116,6 +124,12 @@ class MainViewModelTest {
             BigDecimal(50)
         )
 
+        `when`(saveBloodMeasurementUseCase.invoke(any())).thenReturn(
+            flow {
+                emit(DomainState.Success(Unit))
+            }
+        )
+
         val viewModel = MainViewModel(
             saveBloodMeasurementUseCase,
             getEntriesUseCase,
@@ -130,6 +144,8 @@ class MainViewModelTest {
         job = launch {
             viewModel.entriesUIState.toList(bloodEntriesUIState)
         }
+
+        viewModel.saveBloodMeasurements("50")
         job.cancel()
 
         // Assert
@@ -141,6 +157,51 @@ class MainViewModelTest {
         assertThat(
             (bloodEntriesUIState.first() as BloodEntriesUIState.Success).entries,
             equalTo(expectedEntries)
+        )
+    }
+
+    @Test
+    fun saveBloodMeasurement_emitsErrorState() = mainCoroutineRule.runTest {
+        // Arrange
+
+        `when`(getEntriesUseCase.invoke()).thenReturn(
+            flow {
+                emit(DomainState.Empty)
+            }
+        )
+        `when`(saveBloodMeasurementUseCase.invoke(any())).thenReturn(
+            flow {
+                emit(DomainState.Error("Something went wrong"))
+            }
+        )
+
+        val viewModel = MainViewModel(
+            saveBloodMeasurementUseCase,
+            getEntriesUseCase,
+            convertMeasurementUseCase,
+            getAverageEntryValueUseCase
+        )
+
+        // Act
+        val job: Job?
+        val bloodEntriesUIState = mutableListOf<BloodEntriesUIState>()
+
+        job = launch {
+            viewModel.entriesUIState.toList(bloodEntriesUIState)
+        }
+
+        viewModel.saveBloodMeasurements("50")
+        job.cancel()
+
+        // Assert
+        assertThat(
+            bloodEntriesUIState.first(),
+            instanceOf(BloodEntriesUIState.Empty::class.java)
+        )
+
+        assertThat(
+            bloodEntriesUIState[1],
+            instanceOf(BloodEntriesUIState.Error::class.java)
         )
     }
 }
