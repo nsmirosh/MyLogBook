@@ -238,11 +238,12 @@ fun BloodGlucoseEntryItem(entry: BloodGlucoseEntry) {
     Column {
         Row(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Type: ${entry.type.name}",
+                text = stringResource(R.string.bm_entry_type, entry.type.name),
                 modifier = Modifier.weight(1f)
             )
+
             Text(
-                text = "Value: ${entry.value.setScale(4, RoundingMode.HALF_UP)}",
+                text = stringResource(R.string.bm_entry_value, entry.value.setScale(2, RoundingMode.HALF_UP)),
                 modifier = Modifier.weight(1f)
             )
         }

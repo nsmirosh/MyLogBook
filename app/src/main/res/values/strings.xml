@@ -7,4 +7,7 @@
     <string name="entries_error">Something went wrong with loading entries</string>
     <string name="loading">Loading...</string>
     <string name="average_blood_measurement">Your average is %1$s %2$s</string>
+    <string name="bm_entry_type">Type: %s</string>
+
+    <string name="bm_entry_value">Value: %s</string>
 </resources>
