@@ -88,7 +88,7 @@ dependencies {
     testImplementation ("org.mockito:mockito-inline:4.7.0")
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
-    testImplementation ("android.arch.core:core-testing:1.0.0")
+    testImplementation ("android.arch.core:core-testing:1.1.1")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation ("org.hamcrest:hamcrest-all:1.3")

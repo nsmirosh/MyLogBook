@@ -1,5 +1,6 @@
 package nick.mirosh.logbook.ui.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -79,7 +80,7 @@ class MainViewModel @Inject constructor(
                     }
 
                     is DomainState.Empty -> {
-
+                        Log.d("MainViewModel", "Empty")
                     }
                 }
             }
