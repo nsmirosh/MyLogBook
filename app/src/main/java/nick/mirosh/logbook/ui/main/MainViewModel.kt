@@ -58,7 +58,6 @@ class MainViewModel @Inject constructor(
     }
 
     fun saveBloodMeasurements(text: String) {
-        //TODO make sure input is validated here beforehand
         viewModelScope.launch {
             val entry = BloodGlucoseEntry(
                 type = _bloodMeasurementUIState.value.type,
