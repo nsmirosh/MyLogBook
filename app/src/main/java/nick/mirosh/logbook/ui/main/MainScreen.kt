@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -36,6 +37,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import nick.mirosh.logbook.R
 import nick.mirosh.logbook.domain.model.BloodGlucoseEntry
 import nick.mirosh.logbook.domain.model.BmType
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 
 @Composable
@@ -208,7 +211,8 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
             val entries = entriesUIState.entries
             LazyColumn {
                 items(entries.size) { index ->
-                    Text(entries[index].toString())
+                    BloodGlucoseEntryItem(entries[index])
+//                    Text(entries[index].toString())
                 }
             }
         }
@@ -220,6 +224,23 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
         is BloodEntriesUIState.Error ->
             Text(stringResource(R.string.entries_error))
 
+    }
+}
+
+@Composable
+fun BloodGlucoseEntryItem(entry: BloodGlucoseEntry) {
+    Column {
+        Row(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Type: ${entry.type.name}",
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = "Value: ${entry.value.setScale(4, RoundingMode.HALF_UP)}",
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Divider(color = Color.Gray, thickness = 1.dp)
     }
 }
 
