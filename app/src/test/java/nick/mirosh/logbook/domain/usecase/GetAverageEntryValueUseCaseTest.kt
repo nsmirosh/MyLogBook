@@ -33,7 +33,6 @@ class GetAverageEntryValueUseCaseTest {
                 type = BmType.Mmol
             )
         )
-        //TODO set up mock
         val convertMeasurementUseCase = ConvertMeasurementUseCase()
         val usecase = GetAverageEntryValueUseCase(convertMeasurementUseCase)
         val expected = BigDecimal(4)

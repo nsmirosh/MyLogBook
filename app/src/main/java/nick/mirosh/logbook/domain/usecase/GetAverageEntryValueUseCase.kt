@@ -19,10 +19,8 @@ class GetAverageEntryValueUseCase @Inject constructor(
             } else {
                 entry.value
             }
-
             convertedValue
         }
-
         return totalSum.divide(BigDecimal(entries.size), 5, RoundingMode.HALF_UP)
     }
 }

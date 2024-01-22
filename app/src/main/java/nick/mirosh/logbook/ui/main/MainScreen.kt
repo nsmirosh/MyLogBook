@@ -212,14 +212,12 @@ fun EntriesList(entriesUIState: BloodEntriesUIState) {
             LazyColumn {
                 items(entries.size) { index ->
                     BloodGlucoseEntryItem(entries[index])
-//                    Text(entries[index].toString())
                 }
             }
         }
 
         is BloodEntriesUIState.Loading ->
             Text(stringResource(R.string.loading))
-
 
         is BloodEntriesUIState.Error ->
             Text(stringResource(R.string.entries_error))
